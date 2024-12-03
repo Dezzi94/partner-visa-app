@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,20 +11,22 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ToastProvider>
-          <NotificationProvider>
+    <StrictMode>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
             <AuthProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
+              <NotificationProvider>
+                <ToastProvider>
+                  <AppRoutes />
+                </ToastProvider>
+              </NotificationProvider>
             </AuthProvider>
-          </NotificationProvider>
-        </ToastProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+          </ThemeProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </StrictMode>
   );
 };
 

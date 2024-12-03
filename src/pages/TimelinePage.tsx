@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -53,8 +53,28 @@ const milestoneTypes = [
   { value: 'document', label: 'Important Document', icon: DocumentIcon },
 ];
 
+const STORAGE_KEY = 'relationship_milestones';
+
 const TimelinePage: React.FC = () => {
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>(() => {
+    // Load milestones from localStorage on initial render
+    const savedMilestones = localStorage.getItem(STORAGE_KEY);
+    if (savedMilestones) {
+      const parsedMilestones = JSON.parse(savedMilestones);
+      // Convert date strings back to Date objects
+      return parsedMilestones.map((milestone: any) => ({
+        ...milestone,
+        date: new Date(milestone.date)
+      }));
+    }
+    return [];
+  });
+
+  // Save milestones to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(milestones));
+  }, [milestones]);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -101,25 +121,30 @@ const TimelinePage: React.FC = () => {
 
   const handleSaveMilestone = () => {
     if (editMode && selectedMilestone) {
-      setMilestones(milestones.map(m => 
+      const updatedMilestones = milestones.map(m => 
         m.id === selectedMilestone.id 
           ? { ...formData, id: selectedMilestone.id } 
           : m
-      ));
+      );
+      setMilestones(updatedMilestones);
       showToast('Milestone updated successfully', 'success');
     } else {
       const newMilestone = {
         ...formData,
         id: Date.now().toString(),
       };
-      setMilestones([...milestones, newMilestone].sort((a, b) => a.date.getTime() - b.date.getTime()));
+      const updatedMilestones = [...milestones, newMilestone].sort((a, b) => 
+        a.date.getTime() - b.date.getTime()
+      );
+      setMilestones(updatedMilestones);
       showToast('Milestone added successfully', 'success');
     }
     handleCloseDialog();
   };
 
   const handleDeleteMilestone = (id: string) => {
-    setMilestones(milestones.filter(m => m.id !== id));
+    const updatedMilestones = milestones.filter(m => m.id !== id);
+    setMilestones(updatedMilestones);
     showToast('Milestone deleted', 'info');
   };
 
