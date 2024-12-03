@@ -1,56 +1,65 @@
 import React, { useState } from 'react';
 import {
-  Badge,
   IconButton,
-  Popover,
-  List,
-  ListItem,
+  Badge,
+  Menu,
+  MenuItem,
   ListItemText,
   Typography,
   Box,
-  Chip,
-  Button,
   Divider,
-  ListItemSecondary,
   Tab,
   Tabs,
+  Chip,
+  ListItemIcon,
 } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import InfoIcon from '@mui/icons-material/Info';
-import WarningIcon from '@mui/icons-material/Warning';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { useNotifications, Notification } from '../context/NotificationContext';
-import { format, isToday, isYesterday, differenceInDays } from 'date-fns';
+import {
+  Notifications as NotificationsIcon,
+  NotificationsActive as NotificationsActiveIcon,
+  NotificationsOff as NotificationsOffIcon,
+  AccessTime as AccessTimeIcon,
+  Error as ErrorIcon,
+  Info as InfoIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
+import { format, differenceInDays } from 'date-fns';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`notification-tabpanel-${index}`}
-      aria-labelledby={`notification-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
-    </div>
-  );
+interface Notification {
+  id: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: Date;
 }
 
 const NotificationCenter: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [tabValue, setTabValue] = useState(0);
-  const { state, markAsRead, dismissNotification, clearAll } = useNotifications();
+  const [currentTab, setCurrentTab] = useState(0);
+  const [notifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'warning',
+      title: 'Document Expiring',
+      message: 'Your police check will expire in 30 days.',
+      timestamp: new Date(),
+      read: false,
+      priority: 'high',
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: '2',
+      type: 'info',
+      title: 'Application Update',
+      message: 'Your application status has been updated.',
+      timestamp: new Date(),
+      read: true,
+      priority: 'medium',
+    },
+  ]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -61,23 +70,23 @@ const NotificationCenter: React.FC = () => {
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+    setCurrentTab(newValue);
   };
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'success':
-        return <CheckCircleIcon color="success" />;
       case 'error':
         return <ErrorIcon color="error" />;
       case 'warning':
         return <WarningIcon color="warning" />;
+      case 'success':
+        return <CheckCircleIcon color="success" />;
       default:
         return <InfoIcon color="info" />;
     }
   };
 
-  const getPriorityColor = (priority: Notification['priority']) => {
+  const getPriorityColor = (priority: Notification['priority']): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
     switch (priority) {
       case 'high':
         return 'error';
@@ -90,183 +99,111 @@ const NotificationCenter: React.FC = () => {
     }
   };
 
-  const formatNotificationDate = (date: Date) => {
-    if (isToday(date)) {
-      return `Today ${format(date, 'HH:mm')}`;
-    }
-    if (isYesterday(date)) {
-      return `Yesterday ${format(date, 'HH:mm')}`;
-    }
-    return format(date, 'MMM d, yyyy HH:mm');
+  const formatNotificationDate = (date: Date): string => {
+    return format(date, 'PPp');
   };
 
-  const getTimeUntilDue = (dueDate: Date) => {
-    const daysUntil = differenceInDays(dueDate, new Date());
-    if (daysUntil < 0) {
-      return 'Overdue';
-    }
-    if (daysUntil === 0) {
-      return 'Due today';
-    }
-    if (daysUntil === 1) {
-      return 'Due tomorrow';
-    }
-    return `Due in ${daysUntil} days`;
+  const getTimeUntilDue = (dueDate: Date): string => {
+    const days = differenceInDays(dueDate, new Date());
+    if (days <= 0) return 'Overdue';
+    if (days === 1) return 'Due tomorrow';
+    return `Due in ${days} days`;
   };
 
-  const activeNotifications = state.notifications.filter((n) => !n.isDismissed);
-  const tasks = activeNotifications.filter((n) => n.category === 'task');
-  const deadlines = activeNotifications.filter((n) => n.category === 'deadline');
-  const alerts = activeNotifications.filter((n) => n.category === 'alert');
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'notification-popover' : undefined;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <>
       <IconButton
         color="inherit"
         onClick={handleClick}
-        aria-describedby={id}
+        aria-label={`${unreadCount} unread notifications`}
       >
-        <Badge badgeContent={state.unreadCount} color="error">
-          <NotificationsIcon />
+        <Badge badgeContent={unreadCount} color="error">
+          {unreadCount > 0 ? (
+            <NotificationsActiveIcon />
+          ) : notifications.length > 0 ? (
+            <NotificationsIcon />
+          ) : (
+            <NotificationsOffIcon />
+          )}
         </Badge>
       </IconButton>
-      <Popover
-        id={id}
-        open={open}
+      <Menu
         anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
         PaperProps={{
-          sx: { width: 400, maxHeight: 500 },
+          sx: {
+            width: 360,
+            maxHeight: 500,
+          },
         }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', p: 2, display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>Notifications</Typography>
-          <Button
-            startIcon={<ClearAllIcon />}
-            onClick={clearAll}
-            size="small"
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={currentTab}
+            onChange={handleTabChange}
+            aria-label="notification tabs"
+            variant="fullWidth"
           >
-            Clear All
-          </Button>
+            <Tab label="All" />
+            <Tab label="Unread" />
+          </Tabs>
         </Box>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="notification tabs">
-          <Tab label={`All (${activeNotifications.length})`} />
-          <Tab label={`Tasks (${tasks.length})`} />
-          <Tab label={`Deadlines (${deadlines.length})`} />
-          <Tab label={`Alerts (${alerts.length})`} />
-        </Tabs>
-
-        <TabPanel value={tabValue} index={0}>
-          <NotificationList notifications={activeNotifications} />
-        </TabPanel>
-        <TabPanel value={tabValue} index={1}>
-          <NotificationList notifications={tasks} />
-        </TabPanel>
-        <TabPanel value={tabValue} index={2}>
-          <NotificationList notifications={deadlines} />
-        </TabPanel>
-        <TabPanel value={tabValue} index={3}>
-          <NotificationList notifications={alerts} />
-        </TabPanel>
-      </Popover>
-    </>
-  );
-};
-
-interface NotificationListProps {
-  notifications: Notification[];
-}
-
-const NotificationList: React.FC<NotificationListProps> = ({ notifications }) => {
-  const { markAsRead, dismissNotification } = useNotifications();
-
-  if (notifications.length === 0) {
-    return (
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography color="text.secondary">No notifications</Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <List>
-      {notifications.map((notification) => (
-        <React.Fragment key={notification.id}>
-          <ListItem
-            alignItems="flex-start"
-            sx={{
-              bgcolor: notification.isRead ? 'transparent' : 'action.hover',
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            <Box sx={{ mr: 2, mt: 1 }}>
-              {getNotificationIcon(notification.type)}
-            </Box>
-            <ListItemText
-              primary={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle2">{notification.title || notification.message}</Typography>
-                  <Chip
-                    size="small"
-                    label={notification.priority}
-                    color={getPriorityColor(notification.priority)}
-                  />
-                </Box>
-              }
-              secondary={
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {notification.message}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                    <AccessTimeIcon fontSize="small" color="action" />
-                    <Typography variant="caption" color="text.secondary">
-                      {formatNotificationDate(notification.timestamp)}
-                    </Typography>
-                    {notification.dueDate && (
+        {notifications
+          .filter(notification => currentTab === 0 || !notification.read)
+          .map((notification, index) => (
+            <React.Fragment key={notification.id}>
+              {index > 0 && <Divider />}
+              <MenuItem sx={{ py: 2 }}>
+                <Box sx={{ display: 'flex', width: '100%' }}>
+                  <Box sx={{ mr: 2, mt: 1 }}>
+                    {getNotificationIcon(notification.type)}
+                  </Box>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>
+                        {notification.title}
+                      </Typography>
                       <Chip
                         size="small"
-                        label={getTimeUntilDue(notification.dueDate)}
-                        color={differenceInDays(notification.dueDate, new Date()) < 3 ? 'error' : 'default'}
+                        label={notification.priority}
+                        color={getPriorityColor(notification.priority)}
                       />
-                    )}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {notification.message}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AccessTimeIcon fontSize="small" color="action" />
+                        <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                          {formatNotificationDate(notification.timestamp)}
+                        </Typography>
+                      </Box>
+                      {notification.dueDate && (
+                        <Chip
+                          size="small"
+                          label={getTimeUntilDue(notification.dueDate)}
+                          color={differenceInDays(notification.dueDate, new Date()) < 3 ? 'error' : 'default'}
+                        />
+                      )}
+                    </Box>
                   </Box>
                 </Box>
-              }
-            />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {!notification.isRead && (
-                <Button
-                  size="small"
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  Mark as read
-                </Button>
-              )}
-              <Button
-                size="small"
-                color="error"
-                onClick={() => dismissNotification(notification.id)}
-              >
-                Dismiss
-              </Button>
-            </Box>
-          </ListItem>
-          <Divider component="li" />
-        </React.Fragment>
-      ))}
-    </List>
+              </MenuItem>
+            </React.Fragment>
+          ))}
+        {notifications.length === 0 && (
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography color="text.secondary">No notifications</Typography>
+          </Box>
+        )}
+      </Menu>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -32,44 +32,61 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('user') !== null;
+  });
 
   useEffect(() => {
-    // Check for stored auth state on mount
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
     }
-  }, []);
+  }, [user]);
 
   const login = async (email: string, password: string) => {
-    // Check if credentials match dummy admin user
-    if (email === ADMIN_USER.email && password === ADMIN_USER.password) {
-      const userData = {
-        id: ADMIN_USER.id,
-        email: ADMIN_USER.email,
-        role: ADMIN_USER.role
-      };
-      setUser(userData);
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return;
+    try {
+      // Check if credentials match dummy admin user
+      if (email === ADMIN_USER.email && password === ADMIN_USER.password) {
+        const userData = {
+          id: ADMIN_USER.id,
+          email: ADMIN_USER.email,
+          role: ADMIN_USER.role
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+        return;
+      }
+      throw new Error('Invalid credentials');
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-    throw new Error('Invalid credentials');
   };
 
   const logout = async () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('user');
+    try {
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
   };
 
   const register = async (email: string, password: string) => {
-    // For demo purposes, just log in the user after registration
-    await login(email, password);
+    try {
+      // For demo purposes, just log in the user after registration
+      await login(email, password);
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   };
 
   const value = {

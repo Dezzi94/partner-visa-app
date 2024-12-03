@@ -1,12 +1,8 @@
+/// <reference types="node" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
+import path from 'path'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   base: '/',
@@ -31,7 +27,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   optimizeDeps: {
@@ -45,7 +41,9 @@ export default defineConfig({
       'react-beautiful-dnd',
       'chart.js',
       'react-chartjs-2',
-      'date-fns'
+      'date-fns',
+      'html2canvas',
+      'jspdf'
     ],
     esbuildOptions: {
       target: 'es2020',

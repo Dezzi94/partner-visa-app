@@ -29,6 +29,7 @@ import {
   Timeline as TimelineIcon,
   QuestionAnswer as InterviewIcon,
   LibraryBooks as ResourcesIcon,
+  Assessment as SummaryIcon,
   ChevronLeft as ChevronLeftIcon,
   AccountCircle,
   Logout,
@@ -48,6 +49,7 @@ const menuItems = [
   { path: '/timeline', label: 'Timeline', icon: TimelineIcon },
   { path: '/interview-prep', label: 'Interview Prep', icon: InterviewIcon },
   { path: '/resources', label: 'Resources', icon: ResourcesIcon },
+  { path: '/summary', label: 'Summary Report', icon: SummaryIcon },
 ];
 
 const Layout: React.FC = () => {
@@ -247,13 +249,10 @@ const Layout: React.FC = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
-          backgroundColor: 'background.default',
+          mt: '64px',
         }}
       >
-        <Toolbar />
         <Outlet />
       </Box>
     </Box>

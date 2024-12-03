@@ -4,6 +4,8 @@ import { Link as RouterLink } from 'react-router-dom';
 
 interface PageHeaderProps {
   title: string;
+  subtitle?: string;
+  description?: string;
   breadcrumbs?: Array<{
     label: string;
     path?: string;
@@ -11,7 +13,13 @@ interface PageHeaderProps {
   actions?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, actions }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ 
+  title, 
+  subtitle, 
+  description,
+  breadcrumbs, 
+  actions 
+}) => {
   return (
     <Box sx={{ mb: 4 }}>
       {breadcrumbs && (
@@ -41,19 +49,40 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, actions }) 
       <Stack
         direction="row"
         justifyContent="space-between"
-        alignItems="center"
+        alignItems="flex-start"
         spacing={2}
       >
-        <Typography
-          variant="h1"
-          sx={{
-            fontSize: { xs: '1.75rem', sm: '2.5rem' },
-            fontWeight: 600,
-            color: 'text.primary',
-          }}
-        >
-          {title}
-        </Typography>
+        <Box>
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: '1.75rem', sm: '2.5rem' },
+              fontWeight: 600,
+              color: 'text.primary',
+              mb: subtitle || description ? 1 : 0,
+            }}
+          >
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography
+              variant="subtitle1"
+              color="text.secondary"
+              sx={{ mt: 0.5 }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+          {description && (
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ mt: 1 }}
+            >
+              {description}
+            </Typography>
+          )}
+        </Box>
         {actions && (
           <Box sx={{ display: 'flex', gap: 2 }}>
             {actions}
