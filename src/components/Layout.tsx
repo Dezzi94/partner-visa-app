@@ -28,6 +28,7 @@ import {
   Assignment as FormsIcon,
   Timeline as TimelineIcon,
   QuestionAnswer as InterviewIcon,
+  LibraryBooks as ResourcesIcon,
   ChevronLeft as ChevronLeftIcon,
   AccountCircle,
   Logout,
@@ -46,6 +47,7 @@ const menuItems = [
   { path: '/forms', label: 'Forms', icon: FormsIcon },
   { path: '/timeline', label: 'Timeline', icon: TimelineIcon },
   { path: '/interview-prep', label: 'Interview Prep', icon: InterviewIcon },
+  { path: '/resources', label: 'Resources', icon: ResourcesIcon },
 ];
 
 const Layout: React.FC = () => {
