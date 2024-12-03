@@ -88,7 +88,7 @@ const ProgressRing: React.FC<{ value: number, size?: number, thickness?: number 
 };
 
 // Category Card Component
-const CategoryCard: React.FC<{
+interface CategoryCardProps {
   title: string;
   progress: number;
   completed: number;
@@ -96,7 +96,17 @@ const CategoryCard: React.FC<{
   dueDate?: string;
   icon: React.ReactElement;
   onClick: () => void;
-}> = ({ title, progress, completed, total, dueDate, icon, onClick }) => {
+}
+
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  title,
+  progress,
+  completed,
+  total,
+  dueDate,
+  icon,
+  onClick,
+}) => {
   const theme = useTheme();
   
   return (
@@ -156,7 +166,7 @@ interface Category {
   completed: number;
   total: number;
   dueDate?: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   path: string;
 }
 
@@ -219,7 +229,7 @@ const HomePage: React.FC = () => {
   // Save progress whenever it changes
   useEffect(() => {
     // Create a simplified version of categories without React elements for storage
-    const categoriesToStore = categories.map(({ icon, ...rest }) => rest);
+    const categoriesToStore = categories.map(({ icon, ...rest }: Category) => rest);
     localStorage.setItem('visa_application_progress', JSON.stringify(categoriesToStore));
   }, [categories]);
 

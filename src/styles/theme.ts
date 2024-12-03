@@ -1,27 +1,57 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { PaletteMode } from '@mui/material';
 
-const theme = createTheme({
+// Create theme options for both light and dark modes
+const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
   palette: {
-    primary: {
-      main: '#2196F3',
-      light: '#64B5F6',
-      dark: '#1976D2',
-      contrastText: '#fff',
-    },
-    secondary: {
-      main: '#4CAF50',
-      light: '#81C784',
-      dark: '#388E3C',
-      contrastText: '#fff',
-    },
-    background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#333333',
-      secondary: '#666666',
-    },
+    mode,
+    ...(mode === 'light' 
+      ? {
+          // Light mode colors with improved contrast
+          primary: {
+            main: '#1565c0', // Darker blue for better contrast
+            light: '#5e92f3',
+            dark: '#003c8f',
+            contrastText: '#ffffff',
+          },
+          secondary: {
+            main: '#2e7d32', // Darker green for better contrast
+            light: '#60ad5e',
+            dark: '#005005',
+            contrastText: '#ffffff',
+          },
+          background: {
+            default: '#f5f5f5',
+            paper: '#ffffff',
+          },
+          text: {
+            primary: '#1a1a1a', // Darker text for better contrast
+            secondary: '#424242',
+          },
+        }
+      : {
+          // Dark mode colors with high contrast
+          primary: {
+            main: '#90caf9', // Lighter blue for dark mode
+            light: '#e3f2fd',
+            dark: '#42a5f5',
+            contrastText: '#000000',
+          },
+          secondary: {
+            main: '#81c784', // Lighter green for dark mode
+            light: '#e8f5e9',
+            dark: '#4caf50',
+            contrastText: '#000000',
+          },
+          background: {
+            default: '#000000',
+            paper: '#121212',
+          },
+          text: {
+            primary: '#ffffff',
+            secondary: '#e0e0e0',
+          },
+        }),
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -64,7 +94,7 @@ const theme = createTheme({
       lineHeight: 1.5,
     },
     button: {
-      textTransform: 'none',
+      textTransform: 'none' as const,
       fontWeight: 500,
     },
   },
@@ -74,6 +104,10 @@ const theme = createTheme({
         root: {
           borderRadius: 8,
           padding: '8px 16px',
+          '&:focus-visible': {
+            outline: '2px solid #1565c0',
+            outlineOffset: '2px',
+          },
         },
       },
     },
@@ -92,37 +126,34 @@ const theme = createTheme({
         },
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: '2px solid #1565c0',
+            outlineOffset: '2px',
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: '2px solid #1565c0',
+            outlineOffset: '2px',
+          },
+        },
+      },
+    },
   },
   shape: {
     borderRadius: 8,
   },
-  shadows: [
-    'none',
-    '0 2px 4px rgba(0,0,0,0.05)',
-    '0 4px 8px rgba(0,0,0,0.05)',
-    '0 8px 16px rgba(0,0,0,0.05)',
-    '0 12px 24px rgba(0,0,0,0.05)',
-    '0 16px 32px rgba(0,0,0,0.05)',
-    '0 20px 40px rgba(0,0,0,0.05)',
-    '0 24px 48px rgba(0,0,0,0.05)',
-    '0 28px 56px rgba(0,0,0,0.05)',
-    '0 32px 64px rgba(0,0,0,0.05)',
-    '0 36px 72px rgba(0,0,0,0.05)',
-    '0 40px 80px rgba(0,0,0,0.05)',
-    '0 44px 88px rgba(0,0,0,0.05)',
-    '0 48px 96px rgba(0,0,0,0.05)',
-    '0 52px 104px rgba(0,0,0,0.05)',
-    '0 56px 112px rgba(0,0,0,0.05)',
-    '0 60px 120px rgba(0,0,0,0.05)',
-    '0 64px 128px rgba(0,0,0,0.05)',
-    '0 68px 136px rgba(0,0,0,0.05)',
-    '0 72px 144px rgba(0,0,0,0.05)',
-    '0 76px 152px rgba(0,0,0,0.05)',
-    '0 80px 160px rgba(0,0,0,0.05)',
-    '0 84px 168px rgba(0,0,0,0.05)',
-    '0 88px 176px rgba(0,0,0,0.05)',
-    '0 92px 184px rgba(0,0,0,0.05)',
-  ],
 });
 
+// Create the theme with light mode as default
+const theme = createTheme(getThemeOptions('light'));
+
+export { getThemeOptions };
 export default theme; 

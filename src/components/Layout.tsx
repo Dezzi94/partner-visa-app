@@ -31,9 +31,12 @@ import {
   ChevronLeft as ChevronLeftIcon,
   AccountCircle,
   Logout,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import NotificationCenter from './NotificationCenter';
+import { useThemeMode } from '../context/ThemeContext';
 
 const drawerWidth = 240;
 
@@ -53,6 +56,7 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { mode, toggleTheme } = useThemeMode();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -174,6 +178,15 @@ const Layout: React.FC = () => {
             {menuItems.find((item) => item.path === location.pathname)?.label || 'Partner Visa Guide'}
           </Typography>
           <NotificationCenter />
+          <Tooltip title={mode === 'light' ? 'Enable dark mode' : 'Enable light mode'}>
+            <IconButton
+              onClick={toggleTheme}
+              color="inherit"
+              aria-label="toggle dark mode"
+            >
+              {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Account settings">
             <IconButton
               onClick={handleMenuOpen}
