@@ -1,0 +1,7 @@
+To add a favicon:
+
+1. Create a 32x32 or 64x64 PNG file named "favicon.png"
+2. Place it in the "public" folder
+3. Or you can use any online favicon generator and save the file as favicon.png
+
+For now, you can use any image you prefer as the favicon for your Partner Visa app. 

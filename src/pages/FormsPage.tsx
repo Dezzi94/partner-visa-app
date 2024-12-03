@@ -5,33 +5,29 @@ import {
   TextField,
   Button,
   Typography,
+  InputAdornment,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
-  InputAdornment,
   Tooltip,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import {
   Description as FormIcon,
   Search as SearchIcon,
-  Download as DownloadIcon,
   Help as HelpIcon,
+  Download as DownloadIcon,
   Clear as ClearIcon,
-  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
 import ContentCard from '../components/common/ContentCard';
 import { useToast } from '../components/common/Toast';
 
-interface FormInfo {
+interface Form {
   id: string;
-  name: string;
   code: string;
+  name: string;
   description: string;
   helpText: string;
   url: string;
@@ -44,115 +40,129 @@ interface StatDecTemplate {
   template: string;
 }
 
-const forms: FormInfo[] = [
-  {
-    id: '1',
-    name: 'Application for Partner Visa',
-    code: 'Form 47SP',
-    description: 'Main application form for the Partner visa',
-    helpText: 'This is the primary form that needs to be completed by the visa applicant. It collects personal information, relationship details, and other relevant data.',
-    url: 'https://immi.homeaffairs.gov.au/form-listing/forms/47sp.pdf',
-  },
-  {
-    id: '2',
-    name: 'Sponsorship for a Partner Visa',
-    code: 'Form 40SP',
-    description: 'Sponsorship form to be completed by the Australian partner',
-    helpText: 'This form must be completed by the Australian citizen or permanent resident who is sponsoring their partner for the visa.',
-    url: 'https://immi.homeaffairs.gov.au/form-listing/forms/40sp.pdf',
-  },
-  {
-    id: '3',
-    name: 'Statutory Declaration',
-    code: 'Form 888',
-    description: 'Supporting witness declarations',
-    helpText: 'This form is used by Australian citizens or permanent residents to provide supporting statements about your relationship.',
-    url: 'https://immi.homeaffairs.gov.au/form-listing/forms/888.pdf',
-  },
-];
-
 const statDecTemplates: StatDecTemplate[] = [
   {
     id: '1',
-    title: 'Applicant Statement Template',
-    description: 'Personal statement about your relationship history and future plans',
-    template: `I, [YOUR FULL NAME], declare that:
+    title: 'Applicant Relationship Statement',
+    description: 'A comprehensive statement detailing your relationship history and commitment',
+    template: `STATUTORY DECLARATION
+    
+I, [Your Full Name], of [Your Address], do solemnly and sincerely declare:
 
-1. I first met [PARTNER'S NAME] on [DATE] at [LOCATION/CIRCUMSTANCES].
+RELATIONSHIP HISTORY
+1. I first met [Partner's Name] on [Date] at [Location/Circumstances].
 
 2. Our relationship developed as follows:
-   - [DESCRIBE HOW YOU STARTED DATING]
-   - [MENTION KEY MILESTONES: BECOMING EXCLUSIVE, MEETING FAMILIES, ETC.]
-   - [DESCRIBE WHEN YOU MOVED IN TOGETHER IF APPLICABLE]
+   - First Meeting: [Describe how you met and your initial impressions]
+   - Development of Relationship: [Describe how your relationship progressed]
+   - Decision to Commit: [Describe when and how you decided to commit to each other]
 
-3. We demonstrate our commitment to each other by:
-   - [DESCRIBE SHARED FINANCES/ACCOUNTS]
-   - [MENTION SHARED RESPONSIBILITIES]
-   - [DESCRIBE FUTURE PLANS TOGETHER]
+LIVING ARRANGEMENTS
+3. We began living together on [Date] at [Address].
+   [Describe your living arrangements and how you share responsibilities]
 
-4. We have lived together at:
-   - [ADDRESS] from [DATE] to [DATE]
-   [LIST ALL ADDRESSES IF MULTIPLE]
+FINANCIAL ASPECTS
+4. We share our finances in the following ways:
+   [Describe joint accounts, shared expenses, and financial commitments]
 
-5. Our relationship is genuine and continuing because:
-   - [DESCRIBE DAILY LIFE TOGETHER]
-   - [MENTION SUPPORT FOR EACH OTHER]
-   - [DESCRIBE SHARED SOCIAL LIFE/FAMILY INTEGRATION]
+SOCIAL ASPECTS
+5. Our relationship is known to family and friends:
+   [Describe how you interact as a couple in social settings]
 
-I understand that a person who intentionally makes a false statement in a statutory declaration is guilty of an offence under section 11 of the Statutory Declarations Act 1959.`,
+FUTURE PLANS
+6. Our plans for the future include:
+   [Describe your shared plans and commitments]
+
+I make this solemn declaration conscientiously believing the same to be true.
+
+Signature: ________________
+Date: ____________________
+
+Declared at [Location] on [Date]
+Before me: [Qualified Witness Details]`,
   },
   {
     id: '2',
-    title: 'Witness Statement Template',
-    description: 'Template for Form 888 - Statutory declaration by supporting witness',
-    template: `I, [WITNESS FULL NAME], declare that:
+    title: 'Sponsor Relationship Statement',
+    description: 'A statement from the sponsor supporting the partner visa application',
+    template: `STATUTORY DECLARATION
+    
+I, [Sponsor's Full Name], of [Address], do solemnly and sincerely declare:
 
-1. I am an Australian [CITIZEN/PERMANENT RESIDENT] and I hold [PASSPORT/EVIDENCE NUMBER].
+RELATIONSHIP BACKGROUND
+1. I am the sponsor for [Applicant's Name]'s Partner Visa application.
+2. I first met [Applicant's Name] on [Date] at [Location].
 
-2. I have known [APPLICANT NAME] for [TIME PERIOD] and [PARTNER NAME] for [TIME PERIOD].
+DEVELOPMENT OF RELATIONSHIP
+3. Our relationship developed as follows:
+   [Describe the progression of your relationship]
 
-3. I know them through [DESCRIBE HOW YOU KNOW THE COUPLE].
+COMMITMENT TO RELATIONSHIP
+4. I am committed to this relationship because:
+   [Describe your commitment and future plans]
 
-4. I have witnessed their relationship develop through:
-   - [DESCRIBE SOCIAL INTERACTIONS/EVENTS]
-   - [MENTION SPECIFIC EXAMPLES OF THEIR COMMITMENT]
-   - [DESCRIBE THEIR INTERACTION AS A COUPLE]
+LIVING ARRANGEMENTS
+5. Our current living arrangements:
+   [Describe where and how you live together]
 
-5. Based on my observations, I believe their relationship is genuine because:
-   - [PROVIDE SPECIFIC EXAMPLES]
-   - [DESCRIBE THEIR BEHAVIOUR AS A COUPLE]
-   - [MENTION ANY FUTURE PLANS THEY'VE SHARED]
+FINANCIAL SUPPORT
+6. I confirm that:
+   - I can provide financial support
+   - We share our finances by [describe arrangements]
 
-I understand that a person who intentionally makes a false statement in a statutory declaration is guilty of an offence under section 11 of the Statutory Declarations Act 1959.`,
+I make this solemn declaration conscientiously believing the same to be true.
+
+Signature: ________________
+Date: ____________________
+
+Declared at [Location] on [Date]
+Before me: [Qualified Witness Details]`,
+  }
+];
+
+const forms: Form[] = [
+  {
+    id: '1',
+    code: '47SP',
+    name: 'Application for Partner Visa',
+    description: 'Main application form for the Partner visa',
+    helpText: 'This is the primary form for applying for a Partner visa',
+    url: 'https://immi.homeaffairs.gov.au/form-listing/forms/47sp.pdf'
   },
+  {
+    id: '2',
+    code: '40SP',
+    name: 'Sponsorship for a Partner Visa',
+    description: 'Sponsorship form for Partner visa applications',
+    helpText: 'This form must be completed by the Australian sponsor',
+    url: 'https://immi.homeaffairs.gov.au/form-listing/forms/40sp.pdf'
+  }
 ];
 
 const FormsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState<StatDecTemplate | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<StatDecTemplate | null>(null);
   const { showToast } = useToast();
 
-  const filteredForms = forms.filter(
-    (form) =>
-      form.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      form.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      form.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredForms = forms.filter(form =>
+    form.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    form.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDownload = (form: FormInfo) => {
+  const handleDownload = (form: Form) => {
     window.open(form.url, '_blank');
-    showToast(`Downloading ${form.code}`, 'info');
-  };
-
-  const handleCopyTemplate = (template: StatDecTemplate) => {
-    navigator.clipboard.writeText(template.template);
-    showToast('Template copied to clipboard', 'success');
+    showToast('Download started', 'success');
   };
 
   const handleViewTemplate = (template: StatDecTemplate) => {
     setSelectedTemplate(template);
     setOpenDialog(true);
+  };
+
+  const handleCopyTemplate = (template: StatDecTemplate) => {
+    navigator.clipboard.writeText(template.template);
+    showToast('Template copied to clipboard', 'success');
   };
 
   return (

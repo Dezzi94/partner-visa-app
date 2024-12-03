@@ -33,6 +33,7 @@ import {
   Logout,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import NotificationCenter from './NotificationCenter';
 
 const drawerWidth = 240;
 
@@ -77,15 +78,28 @@ const Layout: React.FC = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'center',
           px: [1],
+          minHeight: '64px'
         }}
       >
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant="h6" 
+          noWrap 
+          component="div" 
+          sx={{ 
+            textAlign: 'center',
+            fontWeight: 500,
+            py: 2
+          }}
+        >
           Partner Visa
         </Typography>
         {isMobile && (
-          <IconButton onClick={handleDrawerToggle}>
+          <IconButton 
+            onClick={handleDrawerToggle}
+            sx={{ position: 'absolute', right: 8 }}
+          >
             <ChevronLeftIcon />
           </IconButton>
         )}
@@ -148,9 +162,18 @@ const Layout: React.FC = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography 
+            variant="h6" 
+            noWrap 
+            component="div" 
+            sx={{ 
+              flexGrow: 1,
+              textAlign: 'center'
+            }}
+          >
             {menuItems.find((item) => item.path === location.pathname)?.label || 'Partner Visa Guide'}
           </Typography>
+          <NotificationCenter />
           <Tooltip title="Account settings">
             <IconButton
               onClick={handleMenuOpen}
