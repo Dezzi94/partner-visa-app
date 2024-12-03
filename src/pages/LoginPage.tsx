@@ -95,6 +95,13 @@ const LoginPage: React.FC = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Demo Credentials:
+                <br />
+                Email: admin@example.com
+                <br />
+                Password: admin123
+              </Typography>
               <Link component={RouterLink} to="/register" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>

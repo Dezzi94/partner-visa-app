@@ -3,80 +3,73 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 interface User {
   id: string;
   email: string;
-  name: string;
-  password: string;
+  role: string;
 }
 
 interface AuthContextType {
-  user: Omit<User, 'password'> | null;
+  user: User | null;
   isAuthenticated: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  register: (credentials: { email: string; password: string; name: string }) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Dummy admin credentials
+const ADMIN_USER = {
+  email: 'admin@example.com',
+  password: 'admin123',
+  id: '1',
+  role: 'admin'
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<Omit<User, 'password'> | null>(null);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  login: async () => {},
+  logout: async () => {},
+  register: async () => {},
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for saved user data on component mount
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
+    // Check for stored auth state on mount
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
     }
   }, []);
 
-  const register = async (credentials: { email: string; password: string; name: string }) => {
-    // Get existing users or initialize empty array
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if email already exists
-    if (existingUsers.some((u: User) => u.email === credentials.email)) {
-      throw new Error('Email already registered');
+  const login = async (email: string, password: string) => {
+    // Check if credentials match dummy admin user
+    if (email === ADMIN_USER.email && password === ADMIN_USER.password) {
+      const userData = {
+        id: ADMIN_USER.id,
+        email: ADMIN_USER.email,
+        role: ADMIN_USER.role
+      };
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return;
     }
-
-    // Create new user
-    const newUser = {
-      id: Date.now().toString(),
-      email: credentials.email,
-      name: credentials.name,
-      password: credentials.password,
-    };
-
-    // Save to users array
-    localStorage.setItem('users', JSON.stringify([...existingUsers, newUser]));
-
-    // Set current user (without password)
-    const { password, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    setIsAuthenticated(true);
-    localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+    throw new Error('Invalid credentials');
   };
 
-  const login = async (credentials: { email: string; password: string }) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: User) => u.email === credentials.email);
-
-    if (!user || user.password !== credentials.password) {
-      throw new Error('Invalid email or password');
-    }
-
-    // Set current user (without password)
-    const { password, ...userWithoutPassword } = user;
-    setUser(userWithoutPassword);
-    setIsAuthenticated(true);
-    localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-  };
-
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('user');
+  };
+
+  const register = async (email: string, password: string) => {
+    // For demo purposes, just log in the user after registration
+    await login(email, password);
   };
 
   const value = {
@@ -92,12 +85,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-} 
+}; 
