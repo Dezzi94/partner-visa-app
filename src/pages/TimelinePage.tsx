@@ -12,6 +12,9 @@ import {
   IconButton,
   MenuItem,
   Tooltip,
+  Paper,
+  Zoom,
+  Fade,
 } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -28,10 +31,13 @@ import {
   Home as HomeIcon,
   Event as EventIcon,
   Description as DocumentIcon,
+  Timeline as TimelineIcon,
+  FileCopy as CopyIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format } from 'date-fns';
 import PageHeader from '../components/common/PageHeader';
 import ContentCard from '../components/common/ContentCard';
 import { useToast } from '../components/common/Toast';
@@ -46,11 +52,12 @@ interface Milestone {
 }
 
 const milestoneTypes = [
-  { value: 'firstMeet', label: 'First Meeting', icon: HeartIcon },
-  { value: 'travel', label: 'Travel Together', icon: TravelIcon },
-  { value: 'moveIn', label: 'Moving In', icon: HomeIcon },
-  { value: 'event', label: 'Special Event', icon: EventIcon },
-  { value: 'document', label: 'Important Document', icon: DocumentIcon },
+  { value: 'firstMeet', label: 'First Meeting', icon: <HeartIcon /> },
+  { value: 'travel', label: 'Travel Together', icon: <TravelIcon /> },
+  { value: 'moveIn', label: 'Move In Together', icon: <HomeIcon /> },
+  { value: 'engagement', label: 'Engagement', icon: <HeartIcon /> },
+  { value: 'document', label: 'Document Submission', icon: <DocumentIcon /> },
+  { value: 'other', label: 'Other Event', icon: <EventIcon /> },
 ];
 
 const STORAGE_KEY = 'relationship_milestones';
@@ -150,7 +157,7 @@ const TimelinePage: React.FC = () => {
 
   const getIconForType = (type: string) => {
     const milestone = milestoneTypes.find(m => m.value === type);
-    return milestone?.icon || EventIcon;
+    return milestone?.icon || <EventIcon />;
   };
 
   const generateStatutoryDeclaration = () => {
@@ -169,106 +176,225 @@ const TimelinePage: React.FC = () => {
   };
 
   return (
-    <Box>
-      <PageHeader
-        title="Relationship Timeline"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Timeline' },
-        ]}
-      />
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <PageHeader
+          title="Relationship Timeline"
+          subtitle="Document important milestones in your relationship for your partner visa application"
+          breadcrumbs={[
+            { label: 'Home', path: '/' },
+            { label: 'Timeline' },
+          ]}
+        />
+      </Box>
 
       <ContentCard
         title="Your Relationship Journey"
-        subtitle="Document important milestones in your relationship for your partner visa application"
-        icon={HeartIcon}
+        icon={<HeartIcon color="error" />}
+        elevation={2}
       >
-        <Box sx={{ mb: 3 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            sx={{ mr: 2 }}
-          >
-            Add Milestone
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<DocumentIcon />}
-            onClick={generateStatutoryDeclaration}
-          >
-            Generate Declaration Text
-          </Button>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 4,
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '600px' }}>
+            Document important milestones in your relationship for your partner visa application
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CopyIcon />}
+              onClick={generateStatutoryDeclaration}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+              }}
+            >
+              Generate Declaration
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenDialog()}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                background: (theme) => theme.palette.primary.main,
+                '&:hover': {
+                  background: (theme) => theme.palette.primary.dark,
+                }
+              }}
+            >
+              Add Milestone
+            </Button>
+          </Box>
         </Box>
 
         <Timeline position="alternate">
-          {milestones.map((milestone) => {
-            const Icon = getIconForType(milestone.type);
-            return (
-              <TimelineItem key={milestone.id}>
+          {milestones.map((milestone, index) => (
+            <Zoom in key={milestone.id} style={{ transitionDelay: `${index * 100}ms` }}>
+              <TimelineItem>
                 <TimelineSeparator>
-                  <TimelineDot color="primary">
-                    <Icon />
+                  <TimelineDot 
+                    sx={{ 
+                      background: (theme) => theme.palette.primary.main,
+                      p: 1,
+                    }}
+                  >
+                    {getIconForType(milestone.type)}
                   </TimelineDot>
                   <TimelineConnector />
                 </TimelineSeparator>
                 <TimelineContent>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="h6" component="span">
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: (theme) => theme.shadows[3],
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h6" 
+                      component="h3"
+                      sx={{ 
+                        color: (theme) => theme.palette.primary.main,
+                        mb: 1
+                      }}
+                    >
                       {milestone.title}
                     </Typography>
-                    <Typography color="text.secondary">
-                      {milestone.date.toLocaleDateString('en-AU', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
+                    <Typography 
+                      variant="subtitle2" 
+                      color="text.secondary"
+                      sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2
+                      }}
+                    >
+                      <EventIcon fontSize="small" />
+                      {format(milestone.date, 'PPP')}
                     </Typography>
-                    <Typography>{milestone.description}</Typography>
                     {milestone.location && (
-                      <Typography color="text.secondary" variant="body2">
-                        Location: {milestone.location}
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 2
+                        }}
+                      >
+                        📍 {milestone.location}
                       </Typography>
                     )}
-                    <Box sx={{ mt: 1 }}>
-                      <Tooltip title="Edit">
-                        <IconButton
-                          size="small"
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      {milestone.description}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      gap: 1, 
+                      justifyContent: 'flex-end',
+                      opacity: 0.7,
+                      transition: 'opacity 0.2s ease',
+                      '&:hover': {
+                        opacity: 1
+                      }
+                    }}>
+                      <Tooltip title="Edit milestone">
+                        <IconButton 
+                          size="small" 
                           onClick={() => handleOpenDialog(milestone)}
-                          sx={{ mr: 1 }}
+                          sx={{ 
+                            color: (theme) => theme.palette.primary.main
+                          }}
                         >
-                          <EditIcon />
+                          <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton
-                          size="small"
-                          color="error"
+                      <Tooltip title="Delete milestone">
+                        <IconButton 
+                          size="small" 
                           onClick={() => handleDeleteMilestone(milestone.id)}
+                          sx={{ 
+                            color: (theme) => theme.palette.error.main
+                          }}
                         >
-                          <DeleteIcon />
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>
-                  </Box>
+                  </Paper>
                 </TimelineContent>
               </TimelineItem>
-            );
-          })}
+            </Zoom>
+          ))}
         </Timeline>
 
         {milestones.length === 0 && (
-          <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
-            Start building your relationship timeline by adding important milestones
-          </Typography>
+          <Fade in>
+            <Box 
+              sx={{ 
+                textAlign: 'center', 
+                py: 8,
+                px: 2,
+                bgcolor: 'background.paper',
+                borderRadius: 2,
+                border: '2px dashed',
+                borderColor: 'divider'
+              }}
+            >
+              <TimelineIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Start Your Journey
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 3 }}>
+                Begin documenting your relationship milestones by adding your first important moment
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenDialog()}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none'
+                }}
+              >
+                Add First Milestone
+              </Button>
+            </Box>
+          </Fade>
         )}
       </ContentCard>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editMode ? 'Edit Milestone' : 'Add Milestone'}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+      <Dialog 
+        open={openDialog} 
+        onClose={handleCloseDialog} 
+        maxWidth="sm" 
+        fullWidth
+        TransitionComponent={Fade}
+      >
+        <DialogTitle sx={{ 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          pb: 2
+        }}>
+          {editMode ? 'Edit Milestone' : 'Add New Milestone'}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   label="Date"
@@ -282,17 +408,20 @@ const TimelinePage: React.FC = () => {
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 select
                 fullWidth
-                label="Type"
+                label="Type of Milestone"
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               >
                 {milestoneTypes.map((type) => (
                   <MenuItem key={type.value} value={type.value}>
-                    {type.label}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {type.icon}
+                      {type.label}
+                    </Box>
                   </MenuItem>
                 ))}
               </TextField>
@@ -301,6 +430,7 @@ const TimelinePage: React.FC = () => {
               <TextField
                 fullWidth
                 label="Title"
+                placeholder="Give your milestone a memorable title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
@@ -309,6 +439,7 @@ const TimelinePage: React.FC = () => {
               <TextField
                 fullWidth
                 label="Description"
+                placeholder="Describe what happened during this milestone"
                 multiline
                 rows={3}
                 value={formData.description}
@@ -318,17 +449,38 @@ const TimelinePage: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Location (optional)"
+                label="Location"
+                placeholder="Where did this milestone take place? (optional)"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               />
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSaveMilestone} variant="contained">
-            {editMode ? 'Update' : 'Add'}
+        <DialogActions sx={{ 
+          borderTop: 1, 
+          borderColor: 'divider',
+          px: 3,
+          py: 2
+        }}>
+          <Button 
+            onClick={handleCloseDialog}
+            sx={{ 
+              textTransform: 'none',
+              color: 'text.secondary'
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveMilestone} 
+            variant="contained"
+            sx={{ 
+              textTransform: 'none',
+              px: 3
+            }}
+          >
+            {editMode ? 'Save Changes' : 'Add Milestone'}
           </Button>
         </DialogActions>
       </Dialog>

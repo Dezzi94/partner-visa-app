@@ -12,6 +12,11 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
+  Paper,
+  Fade,
+  Zoom,
+  Divider,
+  Card,
 } from '@mui/material';
 import {
   Description as FormIcon,
@@ -19,6 +24,10 @@ import {
   Help as HelpIcon,
   Download as DownloadIcon,
   Clear as ClearIcon,
+  FileCopy as CopyIcon,
+  Visibility as ViewIcon,
+  Article as ArticleIcon,
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
 import ContentCard from '../components/common/ContentCard';
@@ -166,125 +175,258 @@ const FormsPage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
       <PageHeader
         title="Visa Forms"
+        subtitle="Download official forms and access statutory declaration templates"
         breadcrumbs={[
           { label: 'Home', path: '/' },
           { label: 'Forms' },
         ]}
       />
 
-      <Box sx={{ mb: 4 }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search forms by name or form number..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            ),
-            endAdornment: searchQuery && (
-              <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchQuery('')} edge="end">
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-          sx={{ maxWidth: 600 }}
-        />
-      </Box>
-
-      <Grid container spacing={3}>
-        {/* Official Forms */}
-        <Grid item xs={12}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Official Forms
+      {/* Search Section */}
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 4,
+          mb: 4,
+          bgcolor: 'background.default',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+          <Typography variant="h6" gutterBottom align="center">
+            Find Forms
           </Typography>
-          <Grid container spacing={3}>
-            {filteredForms.map((form) => (
-              <Grid item xs={12} md={6} lg={4} key={form.id}>
-                <ContentCard
-                  title={form.code}
-                  subtitle={form.name}
-                  icon={FormIcon}
-                  elevation={1}
-                >
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    {form.description}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mt: 2,
-                    }}
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search by form name or number (e.g., '47SP' or 'Partner Visa')..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton 
+                    size="small" 
+                    onClick={() => setSearchQuery('')}
+                    edge="end"
+                    aria-label="clear search"
                   >
-                    <Tooltip title={form.helpText} arrow placement="top">
-                      <IconButton size="small" color="primary">
-                        <HelpIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Button
-                      variant="contained"
-                      startIcon={<DownloadIcon />}
-                      onClick={() => handleDownload(form)}
-                      size="small"
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{ 
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                transition: 'box-shadow 0.2s',
+                '&:hover, &.Mui-focused': {
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                },
+              }
+            }}
+          />
+        </Box>
+      </Paper>
+
+      <Grid container spacing={4}>
+        {/* Official Forms Section */}
+        <Grid item xs={12}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 3, 
+              bgcolor: 'background.default',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <ArticleIcon color="primary" sx={{ fontSize: 32 }} />
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 500 }}>
+                  Official Forms
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Download the required forms for your partner visa application
+                </Typography>
+              </Box>
+            </Box>
+
+            <Grid container spacing={3}>
+              {filteredForms.map((form, index) => (
+                <Grid item xs={12} md={6} key={form.id}>
+                  <Zoom in style={{ transitionDelay: `${index * 100}ms` }}>
+                    <Card
+                      elevation={1}
+                      sx={{
+                        p: 3,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 3,
+                        },
+                      }}
                     >
-                      Download
-                    </Button>
-                  </Box>
-                </ContentCard>
-              </Grid>
-            ))}
-          </Grid>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                        <FormIcon color="primary" sx={{ mt: 0.5 }} />
+                        <Box>
+                          <Typography variant="h6" color="primary" gutterBottom>
+                            {form.code}
+                          </Typography>
+                          <Typography variant="subtitle1">
+                            {form.name}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, flexGrow: 1 }}>
+                        {form.description}
+                      </Typography>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Tooltip 
+                          title={form.helpText}
+                          arrow
+                          placement="top"
+                        >
+                          <Button
+                            variant="outlined"
+                            startIcon={<HelpIcon />}
+                            size="small"
+                            sx={{ 
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              minWidth: 100,
+                            }}
+                          >
+                            Help
+                          </Button>
+                        </Tooltip>
+                        <Button
+                          variant="contained"
+                          startIcon={<DownloadIcon />}
+                          onClick={() => handleDownload(form)}
+                          size="small"
+                          sx={{ 
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            flexGrow: 1,
+                          }}
+                        >
+                          Download Form
+                        </Button>
+                      </Box>
+                    </Card>
+                  </Zoom>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
         </Grid>
 
-        {/* Statutory Declaration Templates */}
-        <Grid item xs={12} sx={{ mt: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Statutory Declaration Templates
-          </Typography>
-          <Grid container spacing={3}>
-            {statDecTemplates.map((template) => (
-              <Grid item xs={12} md={6} key={template.id}>
-                <ContentCard
-                  title={template.title}
-                  subtitle={template.description}
-                  icon={FormIcon}
-                  elevation={1}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 1,
-                      mt: 2,
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      onClick={() => handleViewTemplate(template)}
+        {/* Statutory Declaration Templates Section */}
+        <Grid item xs={12}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 3, 
+              bgcolor: 'background.default',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <AssignmentIcon color="primary" sx={{ fontSize: 32 }} />
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 500 }}>
+                  Statutory Declaration Templates
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Use these templates to prepare your relationship statements
+                </Typography>
+              </Box>
+            </Box>
+
+            <Grid container spacing={3}>
+              {statDecTemplates.map((template, index) => (
+                <Grid item xs={12} md={6} key={template.id}>
+                  <Zoom in style={{ transitionDelay: `${index * 100}ms` }}>
+                    <Card
+                      elevation={1}
+                      sx={{
+                        p: 3,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 3,
+                        },
+                      }}
                     >
-                      View Template
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => handleCopyTemplate(template)}
-                    >
-                      Copy Template
-                    </Button>
-                  </Box>
-                </ContentCard>
-              </Grid>
-            ))}
-          </Grid>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                        <FormIcon color="primary" sx={{ mt: 0.5 }} />
+                        <Box>
+                          <Typography variant="h6" gutterBottom>
+                            {template.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {template.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 3 }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<ViewIcon />}
+                          onClick={() => handleViewTemplate(template)}
+                          sx={{ 
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            flexGrow: 1,
+                          }}
+                        >
+                          Preview
+                        </Button>
+                        <Button
+                          variant="contained"
+                          startIcon={<CopyIcon />}
+                          onClick={() => handleCopyTemplate(template)}
+                          sx={{ 
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            flexGrow: 1,
+                          }}
+                        >
+                          Copy Template
+                        </Button>
+                      </Box>
+                    </Card>
+                  </Zoom>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
         </Grid>
       </Grid>
 
@@ -294,29 +436,72 @@ const FormsPage: React.FC = () => {
         onClose={() => setOpenDialog(false)}
         maxWidth="md"
         fullWidth
+        TransitionComponent={Fade}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: 2,
+          },
+        }}
       >
-        <DialogTitle>{selectedTemplate?.title}</DialogTitle>
-        <DialogContent>
-          <Typography
-            variant="body2"
-            component="pre"
+        <DialogTitle sx={{ 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          pb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}>
+          <FormIcon color="primary" />
+          {selectedTemplate?.title}
+        </DialogTitle>
+        <DialogContent sx={{ py: 3 }}>
+          <Paper
+            variant="outlined"
             sx={{
-              whiteSpace: 'pre-wrap',
-              fontFamily: 'monospace',
-              mt: 2,
+              p: 3,
+              bgcolor: 'background.default',
+              borderRadius: 1,
             }}
           >
-            {selectedTemplate?.template}
-          </Typography>
+            <Typography
+              variant="body2"
+              component="pre"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'monospace',
+                overflowX: 'auto',
+              }}
+            >
+              {selectedTemplate?.template}
+            </Typography>
+          </Paper>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+        <DialogActions sx={{ 
+          borderTop: 1, 
+          borderColor: 'divider',
+          px: 3,
+          py: 2,
+        }}>
+          <Button 
+            onClick={() => setOpenDialog(false)}
+            sx={{ 
+              textTransform: 'none',
+              color: 'text.secondary',
+            }}
+          >
+            Close
+          </Button>
           <Button
             variant="contained"
+            startIcon={<CopyIcon />}
             onClick={() => {
               if (selectedTemplate) {
                 handleCopyTemplate(selectedTemplate);
               }
+            }}
+            sx={{ 
+              textTransform: 'none',
+              px: 3,
             }}
           >
             Copy to Clipboard

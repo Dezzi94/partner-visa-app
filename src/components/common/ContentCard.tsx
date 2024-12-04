@@ -1,30 +1,39 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, Typography, Box, IconButton, CardActions } from '@mui/material';
-import { SvgIconComponent } from '@mui/icons-material';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip,
+  useTheme,
+} from '@mui/material';
+import { Info as InfoIcon } from '@mui/icons-material';
 
 interface ContentCardProps {
-  title: string;
+  title?: string;
   subtitle?: string;
-  icon?: SvgIconComponent;
-  children?: React.ReactNode;
+  helpText?: string;
+  icon?: React.ReactNode;
   action?: React.ReactNode;
-  footer?: React.ReactNode;
+  children: React.ReactNode;
   elevation?: number;
-  sx?: any;
-  onClick?: () => void;
+  noPadding?: boolean;
 }
 
 const ContentCard: React.FC<ContentCardProps> = ({
   title,
   subtitle,
-  icon: Icon,
-  children,
+  helpText,
+  icon,
   action,
-  footer,
+  children,
   elevation = 1,
-  sx = {},
-  onClick,
+  noPadding = false,
 }) => {
+  const theme = useTheme();
+
   return (
     <Card
       elevation={elevation}
@@ -32,49 +41,78 @@ const ContentCard: React.FC<ContentCardProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'all 0.3s ease-in-out',
-        '&:hover': {
-          transform: onClick ? 'translateY(-4px)' : 'none',
-          boxShadow: (theme) => onClick ? theme.shadows[elevation + 2] : theme.shadows[elevation],
-        },
-        ...sx,
+        position: 'relative',
       }}
-      onClick={onClick}
     >
-      <CardHeader
-        avatar={
-          Icon && (
-            <Box
-              sx={{
-                backgroundColor: 'grey.100',
-                borderRadius: 1,
-                width: 40,
-                height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Icon sx={{ color: 'grey.700' }} />
+      {title && (
+        <CardHeader
+          sx={{
+            pb: subtitle ? 1 : 2,
+            '& .MuiCardHeader-content': {
+              overflow: 'hidden',
+            },
+          }}
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {icon && (
+                <Box
+                  sx={{
+                    color: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {icon}
+                </Box>
+              )}
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {title}
+              </Typography>
+              {helpText && (
+                <Tooltip title={helpText} arrow placement="top">
+                  <IconButton size="small" sx={{ ml: 0.5 }}>
+                    <InfoIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
-          )
-        }
-        action={action && <IconButton>{action}</IconButton>}
-        title={
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            {title}
-          </Typography>
-        }
-        subheader={
-          subtitle && (
-            <Typography variant="body2" color="text.secondary">
-              {subtitle}
-            </Typography>
-          )
-        }
-      />
-      <CardContent sx={{ flexGrow: 1 }}>{children}</CardContent>
-      {footer && <CardActions>{footer}</CardActions>}
+          }
+          subheader={
+            subtitle && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {subtitle}
+              </Typography>
+            )
+          }
+          action={action}
+        />
+      )}
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          pt: title ? 0 : 2,
+          pb: `${theme.spacing(2)} !important`,
+          px: noPadding ? 0 : 2,
+        }}
+      >
+        {children}
+      </CardContent>
     </Card>
   );
 };

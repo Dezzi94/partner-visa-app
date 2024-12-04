@@ -207,18 +207,23 @@ const Layout: React.FC = () => {
           </Tooltip>
           <Menu
             anchorEl={anchorEl}
-            id="account-menu"
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
             onClick={handleMenuClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
+            {user && (
+              <MenuItem onClick={handleMenuClose}>
+                <ListItemIcon>
+                  <AccountCircle fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={user.email || 'User'} />
+              </MenuItem>
+            )}
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" />
               </ListItemIcon>
-              Logout
+              <ListItemText>Logout</ListItemText>
             </MenuItem>
           </Menu>
         </Toolbar>

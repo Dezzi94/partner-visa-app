@@ -13,12 +13,12 @@ interface PageHeaderProps {
   actions?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  subtitle, 
+const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  subtitle,
   description,
-  breadcrumbs, 
-  actions 
+  breadcrumbs,
+  actions
 }) => {
   return (
     <Box sx={{ mb: 4 }}>
@@ -31,7 +31,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 component={RouterLink}
                 to={crumb.path}
                 color="inherit"
-                sx={{ 
+                sx={{
                   textDecoration: 'none',
                   '&:hover': { textDecoration: 'underline' }
                 }}
@@ -47,16 +47,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         </Breadcrumbs>
       )}
       <Stack
-        direction="row"
+        direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems="flex-start"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         spacing={2}
       >
         <Box>
           <Typography
-            variant="h1"
+            variant="h4"
+            component="h1"
             sx={{
-              fontSize: { xs: '1.75rem', sm: '2.5rem' },
               fontWeight: 600,
               color: 'text.primary',
               mb: subtitle || description ? 1 : 0,
@@ -84,7 +84,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({
           )}
         </Box>
         {actions && (
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              gap: 2,
+              width: { xs: '100%', sm: 'auto' }
+            }}
+          >
             {actions}
           </Box>
         )}

@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Snackbar,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -169,7 +168,7 @@ const DocumentsPage: React.FC = () => {
           <ContentCard
             title={doc.name}
             subtitle={doc.description}
-            icon={InfoIcon}
+            icon={<InfoIcon />}
             elevation={1}
           >
             <Box sx={{ mb: 2 }}>
@@ -178,7 +177,7 @@ const DocumentsPage: React.FC = () => {
               </Typography>
               <Tooltip title={doc.helpText} arrow placement="top">
                 <IconButton size="small" color="primary" sx={{ ml: 1 }}>
-                  <InfoIcon />
+                  <InfoIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -191,40 +190,41 @@ const DocumentsPage: React.FC = () => {
                     {doc.file?.name}
                   </Typography>
                   <IconButton size="small" color="error" onClick={() => handleDelete(doc.id)}>
-                    <DeleteIcon />
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </>
               ) : (
-                <Button
-                  variant="outlined"
-                  startIcon={<UploadIcon />}
-                  component="label"
-                  color={doc.status === 'error' ? 'error' : 'primary'}
-                >
-                  Upload File
-                  <input
-                    type="file"
-                    hidden
-                    onChange={handleFileUpload(doc.id)}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                  />
-                </Button>
-              )}
-              {doc.sampleUrl && (
-                <Button
-                  size="small"
-                  startIcon={<ViewIcon />}
-                  onClick={() => handleViewSample(doc)}
-                >
-                  View Sample
-                </Button>
+                <>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<UploadIcon />}
+                    size="small"
+                  >
+                    Upload
+                    <input
+                      type="file"
+                      hidden
+                      accept={ALLOWED_TYPES.join(',')}
+                      onChange={handleFileUpload(doc.id)}
+                    />
+                  </Button>
+                  {doc.sampleUrl && (
+                    <Button
+                      startIcon={<ViewIcon />}
+                      size="small"
+                      onClick={() => handleViewSample(doc)}
+                    >
+                      View Sample
+                    </Button>
+                  )}
+                </>
               )}
             </Box>
-
             {doc.status === 'error' && doc.errorMessage && (
-              <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>
+              <Alert severity="error" sx={{ mt: 2 }}>
                 {doc.errorMessage}
-              </Typography>
+              </Alert>
             )}
           </ContentCard>
         </Grid>
@@ -232,81 +232,75 @@ const DocumentsPage: React.FC = () => {
     </Grid>
   );
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedDocument(null);
+  };
+
   return (
-    <Box>
-      <PageHeader
-        title="Document Checklist"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Documents' },
-        ]}
-      />
+    <>
+      <Box sx={{ p: 3 }}>
+        <PageHeader
+          title="Document Checklist"
+          breadcrumbs={[
+            { label: 'Home', path: '/' },
+            { label: 'Documents' },
+          ]}
+        />
 
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <ContentCard
-            title="Required Documents"
-            subtitle={`${
-              requiredDocuments.filter((doc) => doc.status === 'uploaded').length
-            } of ${requiredDocuments.length} uploaded`}
-            icon={InfoIcon}
-          >
-            <Box sx={{ mb: 3 }}>
-              <LinearProgress
-                variant="determinate"
-                value={calculateProgress(requiredDocuments)}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Box>
-            <DocumentList documents={requiredDocuments} />
-          </ContentCard>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <ContentCard
+              title={`Required Documents (${
+                requiredDocuments.filter((doc) => doc.status === 'uploaded').length
+              } of ${requiredDocuments.length} uploaded)`}
+              icon={<InfoIcon />}
+            >
+              <Box sx={{ mb: 3 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculateProgress(requiredDocuments)}
+                  sx={{ height: 8, borderRadius: 4 }}
+                />
+              </Box>
+              <DocumentList documents={requiredDocuments} />
+            </ContentCard>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <ContentCard
+              title={`Optional Documents (${
+                optionalDocuments.filter((doc) => doc.status === 'uploaded').length
+              } of ${optionalDocuments.length} uploaded)`}
+              icon={<InfoIcon />}
+            >
+              <Box sx={{ mb: 3 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculateProgress(optionalDocuments)}
+                  sx={{ height: 8, borderRadius: 4 }}
+                />
+              </Box>
+              <DocumentList documents={optionalDocuments} />
+            </ContentCard>
+          </Grid>
         </Grid>
-
-        <Grid item xs={12} md={6}>
-          <ContentCard
-            title="Optional Documents"
-            subtitle={`${
-              optionalDocuments.filter((doc) => doc.status === 'uploaded').length
-            } of ${optionalDocuments.length} uploaded`}
-            icon={InfoIcon}
-          >
-            <Box sx={{ mb: 3 }}>
-              <LinearProgress
-                variant="determinate"
-                value={calculateProgress(optionalDocuments)}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Box>
-            <DocumentList documents={optionalDocuments} />
-          </ContentCard>
-        </Grid>
-      </Grid>
-
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Sample Document - {selectedDocument?.name}</DialogTitle>
+      </Box>
+      
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Sample Document</DialogTitle>
         <DialogContent>
-          {selectedDocument?.sampleUrl ? (
-            <Box sx={{ width: '100%', height: '500px' }}>
-              <iframe
-                src={selectedDocument.sampleUrl}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                title={`Sample ${selectedDocument.name}`}
-              />
-            </Box>
-          ) : (
-            <Typography>No sample document available</Typography>
+          {selectedDocument && (
+            <Typography>
+              Sample content for {selectedDocument.name}
+            </Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+          <Button onClick={handleCloseDialog}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 
