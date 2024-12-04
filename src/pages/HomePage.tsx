@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -7,10 +7,17 @@ import {
   Typography,
   IconButton,
   Tooltip,
-  CircularProgress,
-  Chip,
-  Paper,
+  Button,
   useTheme,
+  alpha,
+  Card,
+  CardContent,
+  CircularProgress,
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Help as HelpIcon,
@@ -18,27 +25,35 @@ import {
   Assignment as FormsIcon,
   Timeline as TimelineIcon,
   QuestionAnswer as InterviewIcon,
-  Visibility as ViewIcon,
   ArrowForward as ArrowIcon,
+  TaskAlt as TaskIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
 import { useProgress } from '../contexts/ProgressContext';
-import ContentCard from '../components/common/ContentCard';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { calculateCategoryProgress, calculateOverallProgress } = useProgress();
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+
+  const handleHelpOpen = () => {
+    setHelpDialogOpen(true);
+  };
+
+  const handleHelpClose = () => {
+    setHelpDialogOpen(false);
+  };
 
   const categories = [
     {
       title: 'Documents',
       description: 'Upload and manage your visa application documents',
-      icon: <DocumentIcon fontSize="large" />,
+      icon: <DocumentIcon />,
       path: '/documents',
       completionStatus: calculateCategoryProgress('documents'),
-      actionText: 'Upload Documents',
-      actionIcon: <DocumentIcon fontSize="small" />,
+      actionText: 'Start Document Upload',
       nextSteps: [
         'Upload identity documents',
         'Provide relationship evidence',
@@ -48,11 +63,10 @@ const HomePage: React.FC = () => {
     {
       title: 'Forms',
       description: 'Fill out required visa application forms',
-      icon: <FormsIcon fontSize="large" />,
+      icon: <FormsIcon />,
       path: '/forms',
       completionStatus: calculateCategoryProgress('forms'),
-      actionText: 'Continue Forms',
-      actionIcon: <FormsIcon fontSize="small" />,
+      actionText: 'Begin Forms',
       nextSteps: [
         'Complete Form 47SP',
         'Fill sponsor documents',
@@ -62,11 +76,10 @@ const HomePage: React.FC = () => {
     {
       title: 'Timeline',
       description: 'Track important dates and milestones',
-      icon: <TimelineIcon fontSize="large" />,
+      icon: <TimelineIcon />,
       path: '/timeline',
       completionStatus: calculateCategoryProgress('timeline'),
       actionText: 'View Timeline',
-      actionIcon: <ViewIcon />,
       nextSteps: [
         'Add relationship milestones',
         'Document shared experiences',
@@ -74,13 +87,12 @@ const HomePage: React.FC = () => {
       ],
     },
     {
-      title: 'Interview Prep',
+      title: 'Interview Preparation',
       description: 'Practice answering common interview questions',
-      icon: <InterviewIcon fontSize="large" />,
+      icon: <InterviewIcon />,
       path: '/interview-prep',
       completionStatus: calculateCategoryProgress('interview'),
       actionText: 'Start Practice',
-      actionIcon: <InterviewIcon fontSize="small" />,
       nextSteps: [
         'Review common questions',
         'Practice responses',
@@ -90,44 +102,154 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <PageHeader
-          title="Welcome to Partner Visa Guide"
-          subtitle="Track and manage your partner visa application process"
-        />
-        <Tooltip title="Get Help" arrow placement="left">
-          <IconButton
-            color="primary"
-            onClick={() => navigate('/help')}
-            sx={{ ml: 2 }}
-            aria-label="Get help with dashboard"
-          >
-            <HelpIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: theme.palette.mode === 'light' 
+          ? alpha(theme.palette.primary.main, 0.02)
+          : 'background.default',
+        pt: 3,
+        pb: 6,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ flex: 1 }}>
+            <PageHeader
+              title="Welcome to Your Visa Journey"
+              subtitle="We'll guide you through each step of your partner visa application"
+            />
+          </Box>
+          <Tooltip title="Click for help with using this application" arrow placement="left">
+            <IconButton
+              color="primary"
+              onClick={handleHelpOpen}
+              sx={{ 
+                ml: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                },
+              }}
+            >
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
-      <Grid container spacing={4}>
-        {/* Overall Progress Card */}
-        <Grid item xs={12}>
-          <Paper 
-            elevation={2}
-            sx={{ 
-              p: 3, 
-              borderRadius: 2,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}15)`,
+        {/* Help Dialog */}
+        <Dialog
+          open={helpDialogOpen}
+          onClose={handleHelpClose}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            bgcolor: alpha(theme.palette.primary.main, 0.05),
+          }}>
+            <InfoIcon color="primary" />
+            How to Use This Application
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom fontWeight="500">
+              Welcome to your Partner Visa Application Guide!
+            </Typography>
+            
+            <Box sx={{ my: 2 }}>
+              <Typography variant="body1" paragraph>
+                This application will help you prepare and track your partner visa application process. Here's how to use it:
+              </Typography>
+
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <TaskIcon color="primary" fontSize="small" />
+                Track your progress in the overview section at the top
+              </Typography>
+
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <DocumentIcon color="primary" fontSize="small" />
+                Upload and manage required documents in the Documents section
+              </Typography>
+
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <FormsIcon color="primary" fontSize="small" />
+                Complete necessary forms in the Forms section
+              </Typography>
+
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <TimelineIcon color="primary" fontSize="small" />
+                Record important dates and milestones in the Timeline section
+              </Typography>
+
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <InterviewIcon color="primary" fontSize="small" />
+                Practice for your interview in the Interview Preparation section
+              </Typography>
+            </Box>
+
+            <Typography variant="body1" color="text.secondary">
+              Click on any section to get started. Your progress will be automatically saved as you complete each task.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={handleHelpClose}
+              variant="contained"
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                minWidth: 100,
+              }}
+            >
+              Got it
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Progress Overview */}
+        <Card 
+          elevation={0}
+          sx={{ 
+            mb: 4,
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            bgcolor: 'background.paper',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
             }}
           >
+            <LinearProgress 
+              variant="determinate" 
+              value={calculateOverallProgress()} 
+              sx={{
+                height: '100%',
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              }}
+            />
+          </Box>
+          
+          <CardContent sx={{ pt: 4 }}>
             <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} md={6}>
-                <Typography variant="h5" gutterBottom fontWeight="500">
-                  Application Progress
-                </Typography>
-                <Typography variant="body1" color="text.secondary" paragraph>
-                  Track your progress across all categories
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 3,
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                }}>
                   <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                     <CircularProgress
                       variant="determinate"
@@ -148,145 +270,187 @@ const HomePage: React.FC = () => {
                         justifyContent: 'center',
                       }}
                     >
-                      <Typography variant="h6" component="div" color="primary">
+                      <Typography variant="h5" component="div" color="primary" fontWeight="bold">
                         {calculateOverallProgress()}%
                       </Typography>
                     </Box>
                   </Box>
                   <Box>
-                    <Typography variant="subtitle1" fontWeight="500">
-                      Overall Completion
+                    <Typography variant="h6" gutterBottom fontWeight="500">
+                      Your Progress
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Keep going! You're making progress.
+                    <Typography variant="body1" color="text.secondary">
+                      {calculateOverallProgress() === 0 
+                        ? "Let's get started!" 
+                        : calculateOverallProgress() === 100 
+                          ? "All done! Great job!" 
+                          : "Keep going! You're doing great!"}
                     </Typography>
                   </Box>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={8}>
                 <Grid container spacing={2}>
                   {categories.map((category) => (
-                    <Grid item xs={6} key={category.title}>
-                      <Box 
-                        sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          gap: 1,
+                    <Grid item xs={6} sm={3} key={category.title}>
+                      <Box
+                        onClick={() => navigate(category.path)}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
                           cursor: 'pointer',
-                          p: 1,
-                          borderRadius: 1,
                           transition: 'all 0.2s',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                           '&:hover': {
-                            bgcolor: 'action.hover',
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            transform: 'translateY(-2px)',
                           },
                         }}
-                        onClick={() => navigate(category.path)}
                       >
-                        <CircularProgress
-                          variant="determinate"
-                          value={category.completionStatus}
-                          size={40}
-                          thickness={4}
-                          sx={{ color: category.completionStatus === 100 ? 'success.main' : 'primary.main' }}
-                        />
-                        <Box>
-                          <Typography variant="body2" fontWeight="500">
-                            {category.title}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {category.completionStatus}% Complete
-                          </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Box
+                            sx={{
+                              color: category.completionStatus === 100 
+                                ? theme.palette.success.main 
+                                : theme.palette.primary.main,
+                              display: 'flex',
+                            }}
+                          >
+                            {category.completionStatus === 100 ? <TaskIcon /> : category.icon}
+                          </Box>
                         </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          {category.completionStatus}% Complete
+                        </Typography>
                       </Box>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-          </Paper>
-        </Grid>
+          </CardContent>
+        </Card>
 
         {/* Category Cards */}
-        {categories.map((category) => (
-          <Grid item xs={12} md={6} key={category.title}>
-            <ContentCard
-              title={category.title}
-              icon={category.icon}
-              elevation={2}
-              sx={{
-                height: '100%',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: theme.shadows[4],
-                },
-              }}
-            >
-              <Box sx={{ p: 3 }}>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  {category.description}
-                </Typography>
-
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Next Steps:
-                  </Typography>
-                  {category.nextSteps.map((step, index) => (
-                    <Box 
-                      key={index}
-                      sx={{ 
+        <Grid container spacing={3}>
+          {categories.map((category) => (
+            <Grid item xs={12} md={6} key={category.title}>
+              <Card
+                elevation={0}
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <CardContent sx={{ flex: 1, p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+                    <Box
+                      sx={{
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        borderRadius: 2,
+                        p: 1.5,
+                        mr: 2,
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        mb: 1,
                       }}
                     >
-                      <ArrowIcon fontSize="small" color="primary" />
-                      <Typography variant="body2">
-                        {step}
+                      {category.icon}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h6" gutterBottom>
+                        {category.title}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                        {category.description}
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={category.completionStatus}
+                        sx={{ 
+                          mb: 1,
+                          height: 6,
+                          borderRadius: 1,
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        }} 
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {category.completionStatus}% Complete
                       </Typography>
                     </Box>
-                  ))}
-                </Box>
+                  </Box>
 
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: 1,
-                  }}
-                >
-                  <Chip
-                    label={`${category.completionStatus}% Complete`}
-                    color={category.completionStatus === 100 ? 'success' : 'default'}
-                    sx={{ 
-                      borderRadius: '16px',
-                      fontWeight: 500,
-                    }}
-                  />
-                  <Chip
-                    label={category.actionText}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography 
+                      variant="subtitle2" 
+                      color="primary"
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        mb: 2,
+                      }}
+                    >
+                      <TaskIcon fontSize="small" />
+                      Next Steps:
+                    </Typography>
+                    {category.nextSteps.map((step, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 1,
+                          p: 1.5,
+                          borderRadius: 1,
+                          bgcolor: alpha(theme.palette.background.default, 0.5),
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                          },
+                        }}
+                      >
+                        <ArrowIcon
+                          fontSize="small"
+                          sx={{ color: theme.palette.primary.main }}
+                        />
+                        <Typography variant="body2">
+                          {step}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+
+                <Box sx={{ p: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                  <Button
+                    variant="contained"
                     color="primary"
+                    fullWidth
+                    size="large"
+                    startIcon={category.completionStatus === 100 ? <TaskIcon /> : category.icon}
                     onClick={() => navigate(category.path)}
-                    icon={category.actionIcon}
-                    sx={{ 
-                      cursor: 'pointer',
-                      borderRadius: '16px',
-                      fontWeight: 500,
-                      '&:hover': {
-                        bgcolor: 'primary.dark',
-                      },
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontSize: '1rem',
                     }}
-                  />
+                  >
+                    {category.completionStatus === 100 ? 'Review' : category.actionText}
+                  </Button>
                 </Box>
-              </Box>
-            </ContentCard>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 
