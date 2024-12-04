@@ -1,19 +1,21 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface State {
   hasError: boolean;
-  error: Error | null;
+  error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: undefined,
+    errorInfo: undefined
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -22,36 +24,27 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   public render() {
     if (this.state.hasError) {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            p: 3,
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h4" gutterBottom>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h5" color="error" gutterBottom>
             Something went wrong
           </Typography>
           <Typography color="text.secondary" paragraph>
-            {this.state.error?.message || 'An unexpected error occurred'}
+            {this.state.error?.message}
           </Typography>
           <Button
             variant="contained"
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-              window.location.href = '/';
-            }}
+            onClick={() => this.setState({ hasError: false, error: undefined, errorInfo: undefined })}
           >
-            Go to Home Page
+            Try again
           </Button>
         </Box>
       );

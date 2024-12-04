@@ -37,9 +37,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Implement your login logic here
-    // For demo purposes, we'll just set a mock user
+  const login = async (email: string, _password: string) => {
+    // Simulate login delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const mockUser = { email, id: '1' };
     setUser(mockUser);
     setIsAuthenticated(true);
@@ -52,10 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user');
   };
 
-  const register = async (email: string, password: string) => {
-    // Implement your registration logic here
-    // For demo purposes, we'll just set a mock user
-    const mockUser = { email, id: '1' };
+  const register = async (email: string, _password: string) => {
+    // Simulate registration delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const mockUser = { email, id: '2' };
     setUser(mockUser);
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(mockUser));

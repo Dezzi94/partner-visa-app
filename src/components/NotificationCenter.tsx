@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import {
+  Box,
   IconButton,
   Badge,
   Menu,
   MenuItem,
-  ListItemText,
   Typography,
-  Box,
-  Divider,
-  Tab,
   Tabs,
+  Tab,
+  Divider,
   Chip,
-  ListItemIcon,
 } from '@mui/material';
 import {
-  Notifications as NotificationsIcon,
   NotificationsActive as NotificationsActiveIcon,
   NotificationsOff as NotificationsOffIcon,
   AccessTime as AccessTimeIcon,
@@ -27,12 +24,11 @@ import { format, differenceInDays } from 'date-fns';
 
 interface Notification {
   id: string;
-  type: 'info' | 'warning' | 'error' | 'success';
   title: string;
   message: string;
-  timestamp: Date;
+  type: 'error' | 'warning' | 'success' | 'info';
   read: boolean;
-  priority: 'low' | 'medium' | 'high';
+  timestamp: Date;
   dueDate?: Date;
 }
 
@@ -42,22 +38,20 @@ const NotificationCenter: React.FC = () => {
   const [notifications] = useState<Notification[]>([
     {
       id: '1',
-      type: 'warning',
       title: 'Document Expiring',
       message: 'Your police check will expire in 30 days.',
-      timestamp: new Date(),
+      type: 'warning',
       read: false,
-      priority: 'high',
+      timestamp: new Date(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
     {
       id: '2',
-      type: 'info',
       title: 'Application Update',
       message: 'Your application status has been updated.',
-      timestamp: new Date(),
+      type: 'info',
       read: true,
-      priority: 'medium',
+      timestamp: new Date(),
     },
   ]);
 
@@ -69,10 +63,6 @@ const NotificationCenter: React.FC = () => {
     setAnchorEl(null);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setCurrentTab(newValue);
-  };
-
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
       case 'error':
@@ -81,32 +71,17 @@ const NotificationCenter: React.FC = () => {
         return <WarningIcon color="warning" />;
       case 'success':
         return <CheckCircleIcon color="success" />;
-      default:
+      case 'info':
         return <InfoIcon color="info" />;
     }
   };
 
-  const getPriorityColor = (priority: Notification['priority']): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
-    switch (priority) {
-      case 'high':
-        return 'error';
-      case 'medium':
-        return 'warning';
-      case 'low':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatNotificationDate = (date: Date): string => {
+  const formatDate = (date: Date) => {
     return format(date, 'PPp');
   };
 
-  const getTimeUntilDue = (dueDate: Date): string => {
+  const getDueDateStatus = (dueDate: Date) => {
     const days = differenceInDays(dueDate, new Date());
-    if (days <= 0) return 'Overdue';
-    if (days === 1) return 'Due tomorrow';
     return `Due in ${days} days`;
   };
 
@@ -117,91 +92,77 @@ const NotificationCenter: React.FC = () => {
       <IconButton
         color="inherit"
         onClick={handleClick}
-        aria-label={`${unreadCount} unread notifications`}
+        sx={{ ml: 2 }}
       >
         <Badge badgeContent={unreadCount} color="error">
           {unreadCount > 0 ? (
             <NotificationsActiveIcon />
-          ) : notifications.length > 0 ? (
-            <NotificationsIcon />
           ) : (
             <NotificationsOffIcon />
           )}
         </Badge>
       </IconButton>
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
         PaperProps={{
-          sx: {
-            width: 360,
-            maxHeight: 500,
-          },
+          sx: { width: 360, maxHeight: 500 },
         }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={handleTabChange}
-            aria-label="notification tabs"
-            variant="fullWidth"
-          >
-            <Tab label="All" />
-            <Tab label="Unread" />
-          </Tabs>
+        <Box sx={{ px: 2, py: 1 }}>
+          <Typography variant="h6">Notifications</Typography>
         </Box>
-        {notifications
-          .filter(notification => currentTab === 0 || !notification.read)
-          .map((notification, index) => (
-            <React.Fragment key={notification.id}>
-              {index > 0 && <Divider />}
-              <MenuItem sx={{ py: 2 }}>
-                <Box sx={{ display: 'flex', width: '100%' }}>
-                  <Box sx={{ mr: 2, mt: 1 }}>
-                    {getNotificationIcon(notification.type)}
-                  </Box>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>
+        <Divider />
+        <Tabs
+          value={currentTab}
+          onChange={(_event, newValue) => setCurrentTab(newValue)}
+          sx={{ px: 2 }}
+        >
+          <Tab label="All" />
+          <Tab label="Unread" />
+        </Tabs>
+        <Divider />
+        <Box sx={{ mt: 1 }}>
+          {notifications
+            .filter(notification => currentTab === 0 || !notification.read)
+            .map((notification, index) => (
+              <React.Fragment key={notification.id}>
+                {index > 0 && <Divider />}
+                <MenuItem sx={{ py: 2, px: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      {getNotificationIcon(notification.type)}
+                      <Typography variant="subtitle2" sx={{ ml: 1, flexGrow: 1 }}>
                         {notification.title}
                       </Typography>
-                      <Chip
-                        size="small"
-                        label={notification.priority}
-                        color={getPriorityColor(notification.priority)}
-                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {formatDate(notification.timestamp)}
+                      </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
                       {notification.message}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {notification.dueDate && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                         <AccessTimeIcon fontSize="small" color="action" />
                         <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
-                          {formatNotificationDate(notification.timestamp)}
+                          {getDueDateStatus(notification.dueDate)}
                         </Typography>
-                      </Box>
-                      {notification.dueDate && (
                         <Chip
                           size="small"
-                          label={getTimeUntilDue(notification.dueDate)}
+                          sx={{ ml: 1 }}
+                          label={getDueDateStatus(notification.dueDate)}
                           color={differenceInDays(notification.dueDate, new Date()) < 3 ? 'error' : 'default'}
                         />
-                      )}
-                    </Box>
+                      </Box>
+                    )}
                   </Box>
-                </Box>
-              </MenuItem>
-            </React.Fragment>
-          ))}
-        {notifications.length === 0 && (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography color="text.secondary">No notifications</Typography>
-          </Box>
-        )}
+                </MenuItem>
+              </React.Fragment>
+            ))}
+        </Box>
       </Menu>
     </>
   );
