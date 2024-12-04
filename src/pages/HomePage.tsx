@@ -30,14 +30,30 @@ import { useProgress } from '@/contexts/ProgressContext';
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { calculateCategoryProgress } = useProgress();
+  const { calculateCategoryProgress, updateProgress } = useProgress();
   const [infoOpen, setInfoOpen] = useState(false);
 
   const progressCards = [
-    { icon: <DocumentIcon />, progress: '0% Complete' },
-    { icon: <FormsIcon />, progress: '0% Complete' },
-    { icon: <TimelineIcon />, progress: '0% Complete' },
-    { icon: <InterviewIcon />, progress: '0% Complete' },
+    { 
+      icon: <DocumentIcon />, 
+      progress: `${calculateCategoryProgress('documents')}% Complete`,
+      category: 'documents'
+    },
+    { 
+      icon: <FormsIcon />, 
+      progress: `${calculateCategoryProgress('forms')}% Complete`,
+      category: 'forms'
+    },
+    { 
+      icon: <TimelineIcon />, 
+      progress: `${calculateCategoryProgress('timeline')}% Complete`,
+      category: 'timeline'
+    },
+    { 
+      icon: <InterviewIcon />, 
+      progress: `${calculateCategoryProgress('interview')}% Complete`,
+      category: 'interview'
+    },
   ];
 
   const categoryCards = [
