@@ -7,7 +7,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Button,
+  Typography,
 } from '@mui/material';
 import {
   Description as DocumentIcon,
@@ -15,135 +15,110 @@ import {
   Book as GuideIcon,
   Download as DownloadIcon,
 } from '@mui/icons-material';
-import PageHeader from '../components/common/PageHeader';
-import ContentCard from '../components/common/ContentCard';
+import PageHeader from '@/components/common/PageHeader';
+import ContentCard from '@/components/common/ContentCard';
 
 const ResourcesPage: React.FC = () => {
-  const handleDownload = (guideTitle: string) => {
-    // In a real application, this would be an API call to fetch the PDF
-    // For now, we'll simulate a download with a sample PDF
-    const element = document.createElement('a');
-    element.href = `/sample-guides/${guideTitle.toLowerCase().replace(/ /g, '-')}.pdf`;
-    element.download = `${guideTitle}.pdf`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
-  const officialResources = [
+  const resources = [
     {
-      title: "Partner Visa (Subclass 820/801)",
-      description: "Official information about temporary and permanent partner visas",
-      link: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-onshore",
+      title: 'Official Documentation',
+      icon: <DocumentIcon />,
+      items: [
+        {
+          title: 'Partner Visa Guide',
+          description: 'Official guide from the Department of Home Affairs',
+          link: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-onshore',
+        },
+        {
+          title: 'Document Checklist',
+          description: 'Complete list of required documents',
+          link: 'https://immi.homeaffairs.gov.au/help-support/departmental-forms',
+        },
+      ],
     },
     {
-      title: "Document Checklist",
-      description: "Comprehensive list of required documents",
-      link: "https://immi.homeaffairs.gov.au/help-support/departmental-forms",
+      title: 'Helpful Links',
+      icon: <LinkIcon />,
+      items: [
+        {
+          title: 'Processing Times',
+          description: 'Current visa processing times',
+          link: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-processing-times',
+        },
+        {
+          title: 'Fees Calculator',
+          description: 'Calculate visa application fees',
+          link: 'https://immi.homeaffairs.gov.au/visas/visa-pricing-estimator',
+        },
+      ],
     },
     {
-      title: "Processing Times",
-      description: "Current visa processing times and updates",
-      link: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-processing-times",
-    },
-  ];
-
-  const guides = [
-    {
-      title: "Relationship Evidence Guide",
-      description: "How to gather and present evidence of your relationship",
-      downloadable: true,
-    },
-    {
-      title: "Financial Aspects Guide",
-      description: "Understanding shared finances and financial commitments",
-      downloadable: true,
-    },
-    {
-      title: "Common Mistakes Guide",
-      description: "Avoid common mistakes in your partner visa application",
-      downloadable: true,
+      title: 'Guides & Tutorials',
+      icon: <GuideIcon />,
+      items: [
+        {
+          title: 'Application Guide',
+          description: 'Step-by-step guide to applying',
+          link: '#',
+        },
+        {
+          title: 'Evidence Guide',
+          description: 'How to prepare your evidence',
+          link: '#',
+        },
+      ],
     },
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <PageHeader
         title="Resources"
-        subtitle="Helpful resources and guides for your partner visa application"
+        subtitle="Helpful information and links for your visa application"
         breadcrumbs={[
           { label: 'Home', path: '/' },
           { label: 'Resources' },
         ]}
       />
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <ContentCard
-            title="Official Resources"
-            icon={<LinkIcon />}
-            elevation={2}
-          >
-            <List>
-              {officialResources.map((resource, index) => (
-                <ListItem key={index}>
-                  <ListItemIcon>
-                    <DocumentIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Link
-                        href={resource.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{ textDecoration: 'none' }}
-                      >
-                        {resource.title}
-                      </Link>
-                    }
-                    secondary={resource.description}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </ContentCard>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <ContentCard
-            title="Helpful Guides"
-            icon={<GuideIcon />}
-            elevation={2}
-          >
-            <List>
-              {guides.map((guide, index) => (
-                <ListItem
-                  key={index}
-                  secondaryAction={
-                    guide.downloadable && (
-                      <Button
-                        startIcon={<DownloadIcon />}
-                        variant="outlined"
-                        size="small"
-                        onClick={() => handleDownload(guide.title)}
-                      >
-                        Download
-                      </Button>
-                    )
-                  }
-                >
-                  <ListItemIcon>
-                    <GuideIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={guide.title}
-                    secondary={guide.description}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </ContentCard>
-        </Grid>
+      <Grid container spacing={2}>
+        {resources.map((section) => (
+          <Grid item xs={12} md={4} key={section.title}>
+            <ContentCard
+              title={section.title}
+              icon={section.icon}
+            >
+              <List>
+                {section.items.map((item) => (
+                  <ListItem key={item.title} sx={{ px: 0 }}>
+                    <ListItemIcon>
+                      <DownloadIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Link
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          color="primary"
+                          underline="hover"
+                          sx={{ fontWeight: 500 }}
+                        >
+                          {item.title}
+                        </Link>
+                      }
+                      secondary={
+                        <Typography variant="body2" color="text.secondary">
+                          {item.description}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </ContentCard>
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

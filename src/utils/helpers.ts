@@ -1,12 +1,14 @@
 import type { ChromePort } from '../types/chrome';
 
 /**
- * Generates a unique ID with a given prefix
- * @param prefix - The prefix to use for the ID
+ * Generates a unique ID with an optional prefix
+ * @param prefix - Optional prefix for the ID
  * @returns A unique string ID
  */
-export const generateUniqueId = (prefix: string): string => {
-  return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
+export const generateUniqueId = (prefix: string = ''): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  return `${prefix ? prefix + '-' : ''}${timestamp}-${random}`;
 };
 
 /**

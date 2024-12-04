@@ -56,7 +56,7 @@ const DocumentsPage: React.FC = () => {
   }, [uploadedCount, updateDocumentsProgress]);
 
   return (
-    <Box sx={{ height: '100%' }}>
+    <Box>
       <PageHeader
         title="Document Checklist"
         subtitle={`${uploadedCount.required + uploadedCount.optional} of ${requiredDocuments.length + optionalDocuments.length} documents uploaded`}
@@ -66,15 +66,15 @@ const DocumentsPage: React.FC = () => {
         ]}
       />
       
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <ContentCard
             title={`Required Documents (${uploadedCount.required} of ${requiredDocuments.length} uploaded)`}
             icon={<InfoIcon />}
           >
-            <Box sx={{ mt: 2 }}>
+            <Box>
               {requiredDocuments.map((doc) => (
-                <Box key={doc.type} sx={{ mb: 2 }}>
+                <Box key={doc.type} sx={{ mb: 2, '&:last-child': { mb: 0 } }}>
                   <DocumentUpload
                     title={doc.title}
                     description={doc.description}
@@ -93,9 +93,9 @@ const DocumentsPage: React.FC = () => {
             title={`Optional Documents (${uploadedCount.optional} of ${optionalDocuments.length} uploaded)`}
             icon={<InfoIcon />}
           >
-            <Box sx={{ mt: 2 }}>
+            <Box>
               {optionalDocuments.map((doc) => (
-                <Box key={doc.type} sx={{ mb: 2 }}>
+                <Box key={doc.type} sx={{ mb: 2, '&:last-child': { mb: 0 } }}>
                   <DocumentUpload
                     title={doc.title}
                     description={doc.description}

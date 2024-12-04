@@ -24,10 +24,10 @@ import {
   Warning as WarningIcon,
   Info as InfoIcon,
 } from '@mui/icons-material';
-import PageHeader from '../components/common/PageHeader';
-import ContentCard from '../components/common/ContentCard';
-import { useToast } from '../components/common/Toast';
-import { useProgress } from '../contexts/ProgressContext';
+import PageHeader from '@/components/common/PageHeader';
+import ContentCard from '@/components/common/ContentCard';
+import { useToast } from '@/components/common/Toast';
+import { useProgress } from '@/contexts/ProgressContext';
 
 interface Form {
   id: string;
@@ -120,7 +120,7 @@ const FormsPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <PageHeader
         title="Visa Application Forms"
         subtitle="Complete all required forms for your partner visa application"
@@ -130,13 +130,13 @@ const FormsPage: React.FC = () => {
         ]}
       />
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         <Grid item xs={12}>
           <ContentCard
             title="Overall Forms Progress"
             icon={<FormIcon />}
           >
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 2 }}>
               <LinearProgress
                 variant="determinate"
                 value={calculateOverallProgress()}
@@ -147,7 +147,7 @@ const FormsPage: React.FC = () => {
               </Typography>
             </Box>
 
-            <List>
+            <List sx={{ '& .MuiListItem-root': { px: 2 } }}>
               {forms.map((form) => (
                 <ListItem key={form.id}>
                   <ListItemIcon>
@@ -183,37 +183,24 @@ const FormsPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Complete {selectedForm?.name}</DialogTitle>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedForm?.name}
+        </DialogTitle>
         <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            Are you ready to mark this form as complete?
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Please ensure you have:
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <InfoIcon color="info" />
-                </ListItemIcon>
-                <ListItemText primary="Filled out all required fields" />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <InfoIcon color="info" />
-                </ListItemIcon>
-                <ListItemText primary="Double-checked all information" />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <InfoIcon color="info" />
-                </ListItemIcon>
-                <ListItemText primary="Attached all necessary supporting documents" />
-              </ListItem>
-            </List>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            This is a placeholder for the form content. In the actual application, this would be replaced with the real form interface.
           </Alert>
+          <Typography variant="body1">
+            {selectedForm?.description}
+          </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button
             variant="contained"

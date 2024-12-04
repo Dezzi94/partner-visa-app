@@ -1,13 +1,48 @@
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 
-// Define spacing constants
+// Define base spacing unit (8px)
+const BASE_SPACING = 8;
+
+// Define spacing scale
 const spacing = {
-  xs: 4,    // 4px
-  sm: 8,    // 8px
-  md: 16,   // 16px
-  lg: 24,   // 24px
-  xl: 32,   // 32px
-  xxl: 48,  // 48px
+  xs: BASE_SPACING / 2,    // 4px
+  sm: BASE_SPACING,        // 8px
+  md: BASE_SPACING * 2,    // 16px
+  lg: BASE_SPACING * 3,    // 24px
+  xl: BASE_SPACING * 4,    // 32px
+  xxl: BASE_SPACING * 6,   // 48px
+};
+
+// Define layout constants
+const layout = {
+  sidebarWidth: 240,
+  maxContentWidth: 1200,
+  spacing: {
+    // Content spacing
+    contentPadding: {
+      desktop: spacing.xl,    // 32px padding on desktop
+      mobile: spacing.md,     // 16px padding on mobile
+    },
+    
+    // Vertical spacing
+    pageHeaderSpacing: spacing.xl,    // 32px spacing for page headers
+    sectionSpacing: spacing.lg,       // 24px between sections
+    elementSpacing: spacing.md,       // 16px between elements
+    
+    // Card spacing
+    cardPadding: {
+      vertical: spacing.md,           // 16px top/bottom padding
+      horizontal: spacing.lg,         // 24px left/right padding
+    },
+    cardMargin: spacing.lg,          // 24px margin between cards
+    
+    // Navigation
+    breadcrumbSpacing: spacing.md,    // 16px below breadcrumbs
+    navbarHeight: {
+      desktop: 64,
+      mobile: 56,
+    },
+  },
 };
 
 // Define consistent border radius
@@ -21,7 +56,7 @@ const borderRadius = {
 
 // Common theme options
 const commonOptions: ThemeOptions = {
-  spacing: (factor: number) => `${factor * 8}px`,
+  spacing: (factor: number) => `${factor * BASE_SPACING}px`,
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
@@ -89,16 +124,19 @@ const commonOptions: ThemeOptions = {
     MuiContainer: {
       styleOverrides: {
         root: {
-          paddingTop: spacing.xl,
-          paddingBottom: spacing.xl,
+          padding: layout.spacing.contentPadding.mobile,
+          '@media (min-width: 600px)': {
+            padding: layout.spacing.contentPadding.desktop,
+          },
+          maxWidth: layout.maxContentWidth,
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: borderRadius.md,
-          transition: 'box-shadow 0.3s ease-in-out',
+          marginBottom: layout.spacing.cardMargin,
+          padding: `${layout.spacing.cardPadding.vertical}px ${layout.spacing.cardPadding.horizontal}px`,
         },
       },
     },
@@ -208,10 +246,12 @@ const commonOptions: ThemeOptions = {
     },
     MuiGrid: {
       styleOverrides: {
-        root: {
-          '& > .MuiGrid-item': {
-            paddingTop: spacing.md,
-          },
+        container: {
+          marginTop: layout.spacing.elementSpacing,
+          marginBottom: layout.spacing.sectionSpacing,
+        },
+        item: {
+          paddingTop: layout.spacing.elementSpacing,
         },
       },
     },
@@ -219,6 +259,65 @@ const commonOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           margin: `${spacing.md}px 0`,
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          width: layout.sidebarWidth,
+          boxSizing: 'border-box',
+          borderRight: '1px solid',
+          borderColor: 'divider',
+          backgroundColor: 'background.paper',
+        },
+      },
+    },
+    MuiBreadcrumbs: {
+      styleOverrides: {
+        root: {
+          marginBottom: layout.spacing.breadcrumbSpacing,
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        h1: {
+          marginBottom: spacing.md,
+          marginTop: layout.spacing.pageHeaderSpacing,
+        },
+        h2: {
+          marginBottom: spacing.md,
+          marginTop: layout.spacing.sectionSpacing,
+        },
+        h3: {
+          marginBottom: layout.spacing.elementSpacing,
+          marginTop: layout.spacing.sectionSpacing,
+        },
+        h4: {
+          marginBottom: layout.spacing.elementSpacing,
+          marginTop: layout.spacing.elementSpacing,
+        },
+        h5: {
+          marginBottom: layout.spacing.elementSpacing,
+          marginTop: layout.spacing.elementSpacing,
+        },
+        h6: {
+          marginBottom: layout.spacing.elementSpacing,
+          marginTop: layout.spacing.elementSpacing,
+        },
+        subtitle1: {
+          marginBottom: layout.spacing.sectionSpacing,
+          color: 'text.secondary',
+        },
+        subtitle2: {
+          marginBottom: layout.spacing.elementSpacing,
+        },
+        body1: {
+          marginBottom: layout.spacing.elementSpacing,
+        },
+        body2: {
+          marginBottom: layout.spacing.elementSpacing,
         },
       },
     },

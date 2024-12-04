@@ -1,354 +1,346 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Grid,
   Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  LinearProgress,
   Card,
-  IconButton,
   TextField,
-  Collapse,
-  Divider,
+  IconButton,
+  LinearProgress,
+  Tooltip,
+  Container,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
-  QuestionAnswer as QuestionIcon,
-  CheckCircle as CheckIcon,
-  Assignment as PracticeIcon,
-  Info as InfoIcon,
-  Timer as TimerIcon,
-  Refresh as RefreshIcon,
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
+  Refresh as RefreshIcon,
+  Public as GlobalIcon,
+  Favorite as RelationshipIcon,
+  Timeline as TimelineIcon,
+  HelpOutline as HelpIcon,
+  QuestionAnswer as QuestionIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
-import ContentCard from '../components/common/ContentCard';
 import { useToast } from '../components/common/Toast';
-import { useProgress } from '../contexts/ProgressContext';
 
 interface Question {
   id: string;
+  type: string;
   question: string;
   tips: string;
-  exampleAnswer?: string;
   completed: boolean;
-  expanded?: boolean;
   userAnswer?: string;
+  category: string;
 }
 
-interface Timer {
-  isRunning: boolean;
-  seconds: number;
-}
+const QUESTIONS: Question[] = [
+  {
+    id: '1',
+    type: 'cultural',
+    category: 'Cultural Background',
+    question: "What cultural differences have you experienced?",
+    tips: "Discuss how you handle and respect cultural differences.",
+    completed: false,
+  },
+  {
+    id: '2',
+    type: 'relationship',
+    category: 'Relationship History',
+    question: "How has your relationship developed?",
+    tips: "Mention key milestones and shared experiences.",
+    completed: false,
+  },
+  {
+    id: '3',
+    type: 'timeline',
+    category: 'Future Plans',
+    question: "What are your future plans together?",
+    tips: "Discuss both short-term and long-term goals.",
+    completed: false,
+  },
+];
 
-type Timeout = ReturnType<typeof setTimeout>;
+const QuestionIcons: { [key: string]: React.ReactElement } = {
+  "cultural": <GlobalIcon />,
+  "relationship": <RelationshipIcon />,
+  "timeline": <TimelineIcon />,
+};
 
 const InterviewPrepPage: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: '1',
-      question: "How did you meet your partner?",
-      tips: "Be specific about the date, location, and circumstances.",
-      exampleAnswer: "We first met on March 15, 2021, at a mutual friend's birthday party at Cafe Luna. We were introduced by our friend Sarah and spent the evening discussing our shared interest in travel and photography. I remember being particularly impressed by their stories about backpacking through Southeast Asia.",
-      completed: false,
-      expanded: false,
-    },
-    {
-      id: '2',
-      question: "How has your relationship developed?",
-      tips: "Mention key milestones and shared experiences.",
-      completed: false,
-      expanded: false,
-    },
-    {
-      id: '3',
-      question: "What are your future plans together?",
-      tips: "Discuss both short-term and long-term goals.",
-      completed: false,
-      expanded: false,
-    },
-    {
-      id: '4',
-      question: "How do you share responsibilities?",
-      tips: "Explain financial, household, and other shared duties.",
-      completed: false,
-      expanded: false,
-    },
-    {
-      id: '5',
-      question: "What cultural differences have you experienced?",
-      tips: "Discuss how you handle and respect cultural differences.",
-      completed: false,
-      expanded: false,
-    },
-  ]);
-
-  const [timer, setTimer] = useState<Timer>({
-    isRunning: false,
-    seconds: 0,
-  });
-  const [practiceStats, setPracticeStats] = useState({
-    questionsAnswered: 0,
-    totalScore: 0,
-  });
+  const theme = useTheme();
+  const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
   const [answer, setAnswer] = useState('');
-  const [isReviewing, setIsReviewing] = useState(false);
-
+  const [openDialog, setOpenDialog] = useState(false);
+  const [timer, setTimer] = useState({ isRunning: false, seconds: 0 });
+  const [progress, setProgress] = useState({ completed: 0, total: QUESTIONS.length });
   const { showToast } = useToast();
-  const { updateInterviewProgress } = useProgress();
 
   useEffect(() => {
-    const completedQuestions = questions.filter(q => q.completed).length;
-    updateInterviewProgress(completedQuestions, questions.length);
-  }, [questions, updateInterviewProgress]);
-
-  useEffect(() => {
-    let interval: Timeout;
+    let interval: NodeJS.Timeout;
     if (timer.isRunning) {
       interval = setInterval(() => {
-        setTimer(prev => ({
-          ...prev,
-          seconds: prev.seconds + 1
-        }));
+        setTimer(prev => ({ ...prev, seconds: prev.seconds + 1 }));
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [timer.isRunning]);
 
-  const toggleTimer = () => {
-    setTimer(prev => ({
-      ...prev,
-      isRunning: !prev.isRunning,
-    }));
-  };
+  useEffect(() => {
+    const completed = questions.filter(q => q.completed).length;
+    setProgress({ completed, total: questions.length });
+  }, [questions]);
 
-  const resetTimer = () => {
-    setTimer({
-      isRunning: false,
-      seconds: 0,
-    });
-  };
-
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleStartPractice = (question: Question) => {
     setSelectedQuestion(question);
     setAnswer(question.userAnswer || '');
-    setIsReviewing(question.completed);
     setOpenDialog(true);
     if (!timer.isRunning && !question.completed) {
       setTimer(prev => ({ ...prev, isRunning: true }));
     }
   };
 
-  const handleSubmitAnswer = () => {
-    if (selectedQuestion && answer.trim()) {
-      const updatedQuestions = questions.map(q =>
-        q.id === selectedQuestion.id 
-          ? { 
-              ...q, 
-              completed: true,
-              userAnswer: answer,
-            } 
-          : q
-      );
-      setQuestions(updatedQuestions);
-      if (!selectedQuestion.completed) {
-        setPracticeStats(prev => ({
-          questionsAnswered: prev.questionsAnswered + 1,
-          totalScore: prev.totalScore + 5,
-        }));
-      }
-      showToast('Answer submitted successfully', 'success');
-      handleCloseDialog();
-    } else {
-      showToast('Please provide an answer', 'warning');
-    }
-  };
-
-  const handleCloseDialog = () => {
+  const handleSaveAnswer = () => {
+    if (!selectedQuestion) return;
+    
+    const updatedQuestions = questions.map(q =>
+      q.id === selectedQuestion.id
+        ? { ...q, completed: true, userAnswer: answer }
+        : q
+    );
+    
+    setQuestions(updatedQuestions);
     setOpenDialog(false);
-    setSelectedQuestion(null);
-    setAnswer('');
-    setIsReviewing(false);
-  };
-
-  const toggleQuestionExpanded = (questionId: string) => {
-    setQuestions(questions.map(q =>
-      q.id === questionId ? { ...q, expanded: !q.expanded } : q
-    ));
-  };
-
-  const handleStartAgain = () => {
-    setQuestions(questions.map(q => ({ ...q, completed: false, userAnswer: undefined })));
-    setPracticeStats({
-      questionsAnswered: 0,
-      totalScore: 0,
-    });
-    resetTimer();
-    showToast('Practice session reset', 'info');
+    showToast('Answer saved successfully!', 'success');
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <PageHeader
         title="Interview Preparation"
         subtitle="Practice answering common partner visa interview questions"
         breadcrumbs={[
           { label: 'Home', path: '/' },
-          { label: 'Interview Prep' },
+          { label: 'Interview Practice' },
         ]}
       />
 
-      {/* Practice Timer and Stats Card */}
-      <Card sx={{ mb: 3, p: 2, borderRadius: 2 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <TimerIcon color="primary" />
-              <Typography variant="h6">
-                Practice Timer: {formatTime(timer.seconds)}
-              </Typography>
-              <IconButton onClick={toggleTimer} color="primary">
-                {timer.isRunning ? <PauseIcon /> : <PlayIcon />}
-              </IconButton>
-              <IconButton onClick={resetTimer} color="primary">
-                <RefreshIcon />
-              </IconButton>
+      {/* Progress Section */}
+      <Card 
+        elevation={2}
+        sx={{ 
+          mb: 4,
+          borderRadius: 2,
+          bgcolor: alpha(theme.palette.primary.main, 0.05),
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+        }}
+      >
+        <Box sx={{ p: 4 }}>
+          <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 600 }}>
+            Your Progress
+          </Typography>
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 4 }}>
+            Track your interview preparation journey
+          </Typography>
+
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            gap: 4,
+            alignItems: 'center'
+          }}>
+            {/* Timer Section */}
+            <Box sx={{ flex: 1, width: '100%', maxWidth: 300 }}>
+              <Card sx={{ 
+                p: 3, 
+                bgcolor: theme.palette.background.paper,
+                boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
+              }}>
+                <Typography variant="subtitle2" align="center" gutterBottom>
+                  Practice Timer
+                </Typography>
+                <Typography 
+                  variant="h2" 
+                  align="center"
+                  sx={{ 
+                    fontFamily: 'monospace',
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                    mb: 2
+                  }}
+                >
+                  {formatTime(timer.seconds)}
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                  <Tooltip title={timer.isRunning ? "Pause Practice" : "Start Practice"}>
+                    <IconButton
+                      onClick={() => setTimer(prev => ({ ...prev, isRunning: !prev.isRunning }))}
+                      sx={{
+                        bgcolor: timer.isRunning ? alpha(theme.palette.error.main, 0.1) : alpha(theme.palette.primary.main, 0.1),
+                        color: timer.isRunning ? theme.palette.error.main : theme.palette.primary.main,
+                        '&:hover': {
+                          bgcolor: timer.isRunning ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.primary.main, 0.2),
+                        },
+                      }}
+                    >
+                      {timer.isRunning ? <PauseIcon /> : <PlayIcon />}
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reset Timer">
+                    <IconButton
+                      onClick={() => setTimer({ isRunning: false, seconds: 0 })}
+                      sx={{
+                        bgcolor: alpha(theme.palette.grey[500], 0.1),
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.grey[500], 0.2),
+                        },
+                      }}
+                    >
+                      <RefreshIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Card>
             </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography>
-              Progress: {practiceStats.questionsAnswered}/{questions.length} questions answered
-            </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={(practiceStats.questionsAnswered / questions.length) * 100}
-              sx={{ mt: 1, height: 8, borderRadius: 4 }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography>
-              Total Score: {practiceStats.totalScore}/{questions.length * 5}
-            </Typography>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={handleStartAgain}
-              sx={{ mt: 1 }}
-            >
-              Start Again
-            </Button>
-          </Grid>
-        </Grid>
+
+            {/* Progress Tracker */}
+            <Box sx={{ flex: 2, width: '100%' }}>
+              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="h6">
+                  Questions Completed: {progress.completed}/{progress.total}
+                </Typography>
+                <Tooltip title="Complete all questions to prepare for your interview">
+                  <HelpIcon fontSize="small" color="action" />
+                </Tooltip>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={(progress.completed / progress.total) * 100}
+                sx={{
+                  height: 10,
+                  borderRadius: 5,
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  mb: 2,
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 5,
+                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                  },
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {progress.completed === progress.total 
+                  ? "Great job! You've completed all practice questions." 
+                  : "Keep practicing to improve your interview skills"}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
       </Card>
 
       {/* Practice Questions */}
-      <ContentCard
-        title="Practice Questions"
-        icon={<QuestionIcon />}
-        elevation={2}
-      >
-        <List>
-          {questions.map((question) => (
-            <React.Fragment key={question.id}>
-              <ListItem
-                sx={{
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 1,
-                  py: 2,
-                }}
-              >
-                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <ListItemIcon>
-                    {question.completed ? (
-                      <CheckIcon color="success" />
-                    ) : (
-                      <QuestionIcon color="primary" />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={question.question}
-                    secondary={question.completed ? 'Completed' : 'Not started'}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                      variant={question.completed ? "outlined" : "contained"}
-                      color={question.completed ? "success" : "primary"}
-                      onClick={() => handleStartPractice(question)}
-                      startIcon={question.completed ? <InfoIcon /> : <PracticeIcon />}
-                    >
-                      {question.completed ? 'Review Answer' : 'Practice'}
-                    </Button>
-                    <IconButton onClick={() => toggleQuestionExpanded(question.id)}>
-                      {question.expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
-                  </Box>
+      <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+        Practice Questions
+        <Tooltip title="Click 'Practice' to start answering questions">
+          <HelpIcon fontSize="small" color="action" />
+        </Tooltip>
+      </Typography>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {questions.map((question) => (
+          <Card
+            key={question.id}
+            sx={{
+              borderRadius: 2,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: theme.shadows[4],
+              },
+            }}
+          >
+            <Box sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    border: `2px solid ${alpha(theme.palette.primary.main, question.completed ? 0.5 : 0.2)}`,
+                  }}
+                >
+                  {QuestionIcons[question.type]}
                 </Box>
-                <Collapse in={question.expanded} sx={{ width: '100%' }}>
-                  <Box sx={{ pl: 6, pr: 2, py: 1 }}>
-                    <Typography variant="subtitle2" color="primary" gutterBottom>
-                      Tips:
-                    </Typography>
-                    <Typography variant="body2" paragraph>
-                      {question.tips}
-                    </Typography>
-                    {question.exampleAnswer && (
-                      <>
-                        <Typography variant="subtitle2" color="primary" gutterBottom>
-                          Example Answer:
-                        </Typography>
-                        <Typography variant="body2">
-                          {question.exampleAnswer}
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-                </Collapse>
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
-      </ContentCard>
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {question.category}
+                  </Typography>
+                  <Typography variant="h6" gutterBottom>
+                    {question.question}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {question.tips}
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant={question.completed ? "outlined" : "contained"}
+                  onClick={() => handleStartPractice(question)}
+                  startIcon={<QuestionIcon />}
+                  sx={{
+                    minWidth: 120,
+                    height: 40,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                  }}
+                >
+                  {question.completed ? 'Review Answer' : 'Practice Now'}
+                </Button>
+              </Box>
+            </Box>
+          </Card>
+        ))}
+      </Box>
 
       {/* Practice Dialog */}
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
+      <Dialog 
+        open={openDialog} 
+        onClose={() => setOpenDialog(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 }
-        }}
       >
         <DialogTitle>
-          {isReviewing ? 'Review Answer' : 'Practice Question'}
+          {selectedQuestion?.completed ? 'Review Your Answer' : 'Practice Question'}
         </DialogTitle>
         <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            {selectedQuestion?.question}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            {selectedQuestion?.tips}
-          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              {selectedQuestion?.category}
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              {selectedQuestion?.question}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              {selectedQuestion?.tips}
+            </Typography>
+          </Box>
           <TextField
             label="Your Answer"
             multiline
@@ -356,27 +348,19 @@ const InterviewPrepPage: React.FC = () => {
             fullWidth
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            variant="outlined"
-            disabled={isReviewing}
+            placeholder="Type your answer here..."
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDialog} color="inherit">
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="inherit">
             Cancel
           </Button>
-          {!isReviewing && (
-            <Button
-              onClick={handleSubmitAnswer}
-              variant="contained"
-              color="primary"
-              disabled={!answer.trim()}
-            >
-              Submit Answer
-            </Button>
-          )}
+          <Button onClick={handleSaveAnswer} variant="contained">
+            Save Answer
+          </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Container>
   );
 };
 

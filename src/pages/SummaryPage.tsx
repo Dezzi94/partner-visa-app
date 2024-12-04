@@ -3,25 +3,27 @@ import {
   Box,
   Grid,
   Typography,
+  LinearProgress,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  LinearProgress,
-  Chip,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
-  CheckCircle as CompleteIcon,
-  RadioButtonUnchecked as IncompleteIcon,
+  CheckCircle as CheckIcon,
+  Cancel as CancelIcon,
+  ArrowForward as ArrowIcon,
+  Assessment as AssessmentIcon,
   Assignment as TaskIcon,
   Timeline as TimelineIcon,
-  Description as DocumentIcon,
-  ListAlt as FormIcon,
 } from '@mui/icons-material';
-import PageHeader from '../components/common/PageHeader';
-import ContentCard from '../components/common/ContentCard';
+import PageHeader from '@/components/common/PageHeader';
+import ContentCard from '@/components/common/ContentCard';
 
 const SummaryPage: React.FC = () => {
+  const theme = useTheme();
   const applicationProgress = {
     documents: 75,
     forms: 60,
@@ -32,6 +34,7 @@ const SummaryPage: React.FC = () => {
   const tasks = [
     {
       category: 'Documents',
+      icon: <AssessmentIcon />,
       items: [
         { title: 'Identity Documents', status: 'complete' },
         { title: 'Relationship Evidence', status: 'complete' },
@@ -41,6 +44,7 @@ const SummaryPage: React.FC = () => {
     },
     {
       category: 'Forms',
+      icon: <TaskIcon />,
       items: [
         { title: 'Form 47SP', status: 'complete' },
         { title: 'Form 40SP', status: 'complete' },
@@ -57,7 +61,7 @@ const SummaryPage: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <PageHeader
         title="Application Summary"
         subtitle="Track your progress and next steps"
@@ -67,137 +71,78 @@ const SummaryPage: React.FC = () => {
         ]}
       />
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
           <ContentCard
-            title="Application Progress"
+            title="Progress Overview"
             icon={<TimelineIcon />}
-            elevation={2}
           >
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary="Documents"
-                  secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={applicationProgress.documents}
-                        sx={{ flexGrow: 1, mr: 2 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {applicationProgress.documents}%
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Forms"
-                  secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={applicationProgress.forms}
-                        sx={{ flexGrow: 1, mr: 2 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {applicationProgress.forms}%
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Timeline"
-                  secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={applicationProgress.timeline}
-                        sx={{ flexGrow: 1, mr: 2 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {applicationProgress.timeline}%
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Interview Preparation"
-                  secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={applicationProgress.interview}
-                        sx={{ flexGrow: 1, mr: 2 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {applicationProgress.interview}%
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-            </List>
+            <Grid container spacing={2}>
+              {Object.entries(applicationProgress).map(([category, progress]) => (
+                <Grid item xs={12} sm={6} md={3} key={category}>
+                  <Box sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 1 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ textTransform: 'capitalize' }}>
+                      {category}
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{ 
+                        height: 8,
+                        borderRadius: 4,
+                        mb: 1,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {progress}% Complete
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </ContentCard>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <ContentCard
-            title="Task Status"
-            icon={<TaskIcon />}
-            elevation={2}
-          >
-            {tasks.map((category) => (
-              <Box key={category.category} sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" color="primary" gutterBottom>
-                  {category.category}
-                </Typography>
-                <List dense>
-                  {category.items.map((item, index) => (
-                    <ListItem key={index}>
-                      <ListItemIcon>
-                        {item.status === 'complete' ? (
-                          <CompleteIcon color="success" />
-                        ) : (
-                          <IncompleteIcon color="action" />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.title}
-                        secondary={
-                          <Chip
-                            label={item.status}
-                            size="small"
-                            color={item.status === 'complete' ? 'success' : 'default'}
-                            sx={{ mt: 0.5 }}
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            ))}
-          </ContentCard>
-        </Grid>
+        {tasks.map((section) => (
+          <Grid item xs={12} md={6} key={section.category}>
+            <ContentCard
+              title={section.category}
+              icon={section.icon}
+            >
+              <List>
+                {section.items.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      {item.status === 'complete' ? (
+                        <CheckIcon color="success" />
+                      ) : (
+                        <CancelIcon color="error" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.title}
+                      primaryTypographyProps={{
+                        color: item.status === 'complete' ? 'text.primary' : 'error',
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </ContentCard>
+          </Grid>
+        ))}
 
         <Grid item xs={12}>
           <ContentCard
             title="Next Steps"
-            icon={<DocumentIcon />}
-            elevation={2}
+            icon={<ArrowIcon />}
           >
             <List>
               {nextSteps.map((step, index) => (
                 <ListItem key={index}>
                   <ListItemIcon>
-                    <FormIcon color="primary" />
+                    <ArrowIcon color="primary" />
                   </ListItemIcon>
                   <ListItemText primary={step} />
                 </ListItem>
