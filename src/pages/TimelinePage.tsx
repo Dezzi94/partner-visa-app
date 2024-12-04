@@ -43,6 +43,7 @@ import { format } from 'date-fns';
 import PageHeader from '../components/common/PageHeader';
 import ContentCard from '../components/common/ContentCard';
 import { useToast } from '../components/common/Toast';
+import { useProgress } from '../contexts/ProgressContext';
 
 interface Milestone {
   id: string;
@@ -66,11 +67,9 @@ const STORAGE_KEY = 'relationship_milestones';
 
 const TimelinePage: React.FC = () => {
   const [milestones, setMilestones] = useState<Milestone[]>(() => {
-    // Load milestones from localStorage on initial render
     const savedMilestones = localStorage.getItem(STORAGE_KEY);
     if (savedMilestones) {
       const parsedMilestones = JSON.parse(savedMilestones);
-      // Convert date strings back to Date objects
       return parsedMilestones.map((milestone: any) => ({
         ...milestone,
         date: new Date(milestone.date)
@@ -79,15 +78,11 @@ const TimelinePage: React.FC = () => {
     return [];
   });
 
-  // Save milestones to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(milestones));
-  }, [milestones]);
-
+  const { showToast } = useToast();
+  const { updateTimelineProgress } = useProgress();
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     date: new Date(),
@@ -96,6 +91,18 @@ const TimelinePage: React.FC = () => {
     description: '',
     location: '',
   });
+
+  // Update progress whenever milestones change
+  useEffect(() => {
+    // Recommended number of milestones for a strong application
+    const recommendedMilestones = 20;
+    updateTimelineProgress(milestones.length, recommendedMilestones);
+  }, [milestones, updateTimelineProgress]);
+
+  // Save milestones to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(milestones));
+  }, [milestones]);
 
   const handleOpenDialog = (milestone?: Milestone) => {
     if (milestone) {

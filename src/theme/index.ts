@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
 
 // Define spacing constants
 const spacing = {
@@ -19,8 +19,8 @@ const borderRadius = {
   xl: 24,
 };
 
-// Create theme
-const theme = createTheme({
+// Common theme options
+const commonOptions: ThemeOptions = {
   spacing: (factor: number) => `${factor * 8}px`,
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -63,13 +63,11 @@ const theme = createTheme({
     subtitle1: {
       fontSize: '1rem',
       lineHeight: 1.5,
-      color: 'text.secondary',
       marginBottom: spacing.sm,
     },
     subtitle2: {
       fontSize: '0.875rem',
       lineHeight: 1.5,
-      color: 'text.secondary',
       marginBottom: spacing.sm,
     },
     body1: {
@@ -100,11 +98,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: borderRadius.md,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           transition: 'box-shadow 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-          },
         },
       },
     },
@@ -125,16 +119,9 @@ const theme = createTheme({
           padding: `${spacing.sm}px ${spacing.md}px`,
           fontWeight: 500,
           textTransform: 'none',
-          '&:focus-visible': {
-            outline: '2px solid #1976d2',
-            outlineOffset: '2px',
-          },
         },
         contained: {
           boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          },
         },
       },
     },
@@ -143,10 +130,6 @@ const theme = createTheme({
         root: {
           borderRadius: borderRadius.sm,
           padding: spacing.sm,
-          '&:focus-visible': {
-            outline: '2px solid #1976d2',
-            outlineOffset: '2px',
-          },
         },
       },
     },
@@ -162,10 +145,6 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: borderRadius.sm,
-          '&:focus-visible': {
-            outline: '2px solid #1976d2',
-            outlineOffset: '2px',
-          },
         },
       },
     },
@@ -225,12 +204,6 @@ const theme = createTheme({
         root: {
           borderRadius: borderRadius.md,
         },
-        elevation1: {
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        },
-        elevation2: {
-          boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-        },
       },
     },
     MuiGrid: {
@@ -250,6 +223,91 @@ const theme = createTheme({
       },
     },
   },
+};
+
+// Light theme
+export const lightTheme = createTheme({
+  ...commonOptions,
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+    },
+    secondary: {
+      main: '#9c27b0',
+      light: '#ba68c8',
+      dark: '#7b1fa2',
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: 'rgba(0, 0, 0, 0.87)',
+      secondary: 'rgba(0, 0, 0, 0.6)',
+    },
+    divider: 'rgba(0, 0, 0, 0.12)',
+  },
+  components: {
+    ...commonOptions.components,
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          '&:hover': {
+            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+          },
+        },
+      },
+    },
+  },
 });
 
-export default theme; 
+// Dark theme
+export const darkTheme = createTheme({
+  ...commonOptions,
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9',
+      light: '#e3f2fd',
+      dark: '#42a5f5',
+    },
+    secondary: {
+      main: '#ce93d8',
+      light: '#f3e5f5',
+      dark: '#ab47bc',
+    },
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+    divider: 'rgba(255, 255, 255, 0.12)',
+  },
+  components: {
+    ...commonOptions.components,
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+          '&:hover': {
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+  },
+}); 

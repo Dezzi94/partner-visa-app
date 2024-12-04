@@ -20,6 +20,7 @@ import {
   MenuItem,
   Tooltip,
   Divider,
+  Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -35,10 +36,12 @@ import {
   Logout,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
+  SupportAgent as SupportIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import NotificationCenter from './NotificationCenter';
-import { useThemeMode } from '../context/ThemeContext';
+import { useTheme as useThemeContext } from '../contexts/ThemeContext';
+import ContactDialog from './common/ContactDialog';
 
 const drawerWidth = 240;
 
@@ -57,10 +60,11 @@ const Layout: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { mode, toggleTheme } = useThemeMode();
+  const { mode, toggleTheme } = useThemeContext();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -176,13 +180,26 @@ const Layout: React.FC = () => {
             component="div" 
             sx={{ 
               flexGrow: 1,
-              textAlign: 'center'
+              textAlign: { xs: 'center', sm: 'left' }
             }}
           >
             {menuItems.find((item) => item.path === location.pathname)?.label || 'Partner Visa Guide'}
           </Typography>
+          
+          <Button
+            color="inherit"
+            startIcon={<SupportIcon />}
+            onClick={() => setContactDialogOpen(true)}
+            sx={{ 
+              mr: 2,
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            Contact Support
+          </Button>
+          
           <NotificationCenter />
-          <Tooltip title={mode === 'light' ? 'Enable dark mode' : 'Enable light mode'}>
+          <Tooltip title={mode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
             <IconButton
               onClick={toggleTheme}
               color="inherit"
@@ -228,6 +245,7 @@ const Layout: React.FC = () => {
           </Menu>
         </Toolbar>
       </AppBar>
+      
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -248,8 +266,34 @@ const Layout: React.FC = () => {
           }}
         >
           {drawer}
+          {isMobile && (
+            <>
+              <Divider />
+              <List>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      setContactDialogOpen(true);
+                      handleDrawerToggle();
+                    }}
+                    sx={{
+                      borderRadius: 1,
+                      mx: 1,
+                      my: 0.5,
+                    }}
+                  >
+                    <ListItemIcon>
+                      <SupportIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Contact Support" />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </>
+          )}
         </Drawer>
       </Box>
+      
       <Box
         component="main"
         sx={{
@@ -260,6 +304,11 @@ const Layout: React.FC = () => {
       >
         <Outlet />
       </Box>
+      
+      <ContactDialog
+        open={contactDialogOpen}
+        onClose={() => setContactDialogOpen(false)}
+      />
     </Box>
   );
 };

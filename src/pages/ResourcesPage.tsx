@@ -1,167 +1,151 @@
 import React from 'react';
 import {
-  Container,
+  Box,
   Grid,
   Link,
-  Typography,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Paper,
+  Button,
 } from '@mui/material';
 import {
-  Language as WebsiteIcon,
   Description as DocumentIcon,
-  Help as HelpIcon,
+  Link as LinkIcon,
+  Book as GuideIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
+import ContentCard from '../components/common/ContentCard';
 
 const ResourcesPage: React.FC = () => {
+  const handleDownload = (guideTitle: string) => {
+    // In a real application, this would be an API call to fetch the PDF
+    // For now, we'll simulate a download with a sample PDF
+    const element = document.createElement('a');
+    element.href = `/sample-guides/${guideTitle.toLowerCase().replace(/ /g, '-')}.pdf`;
+    element.download = `${guideTitle}.pdf`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const officialResources = [
+    {
+      title: "Partner Visa (Subclass 820/801)",
+      description: "Official information about temporary and permanent partner visas",
+      link: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-onshore",
+    },
+    {
+      title: "Document Checklist",
+      description: "Comprehensive list of required documents",
+      link: "https://immi.homeaffairs.gov.au/help-support/departmental-forms",
+    },
+    {
+      title: "Processing Times",
+      description: "Current visa processing times and updates",
+      link: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-processing-times",
+    },
+  ];
+
+  const guides = [
+    {
+      title: "Relationship Evidence Guide",
+      description: "How to gather and present evidence of your relationship",
+      downloadable: true,
+    },
+    {
+      title: "Financial Aspects Guide",
+      description: "Understanding shared finances and financial commitments",
+      downloadable: true,
+    },
+    {
+      title: "Common Mistakes Guide",
+      description: "Avoid common mistakes in your partner visa application",
+      downloadable: true,
+    },
+  ];
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <PageHeader 
+    <Box sx={{ p: 3 }}>
+      <PageHeader
         title="Resources"
-        subtitle="Official resources, forms, and frequently asked questions to help with your partner visa application."
+        subtitle="Helpful resources and guides for your partner visa application"
+        breadcrumbs={[
+          { label: 'Home', path: '/' },
+          { label: 'Resources' },
+        ]}
       />
 
-      {/* Official Resources Section */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Official Websites
-            </Typography>
+          <ContentCard
+            title="Official Resources"
+            icon={<LinkIcon />}
+            elevation={2}
+          >
             <List>
-              <ListItem>
-                <ListItemIcon>
-                  <WebsiteIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Link 
-                      href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-onshore" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Department of Home Affairs - Partner Visa
-                    </Link>
-                  }
-                  secondary="Official information about partner visa requirements and application process"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <WebsiteIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Link 
-                      href="https://online.immi.gov.au" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      ImmiAccount
-                    </Link>
-                  }
-                  secondary="Portal for lodging and managing your visa application"
-                />
-              </ListItem>
+              {officialResources.map((resource, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <DocumentIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Link
+                        href={resource.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textDecoration: 'none' }}
+                      >
+                        {resource.title}
+                      </Link>
+                    }
+                    secondary={resource.description}
+                  />
+                </ListItem>
+              ))}
             </List>
-          </Paper>
+          </ContentCard>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Important Forms
-            </Typography>
+          <ContentCard
+            title="Helpful Guides"
+            icon={<GuideIcon />}
+            elevation={2}
+          >
             <List>
-              <ListItem>
-                <ListItemIcon>
-                  <DocumentIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Link 
-                      href="https://immi.homeaffairs.gov.au/form-listing/forms/47sp.pdf" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Form 47SP
-                    </Link>
+              {guides.map((guide, index) => (
+                <ListItem
+                  key={index}
+                  secondaryAction={
+                    guide.downloadable && (
+                      <Button
+                        startIcon={<DownloadIcon />}
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleDownload(guide.title)}
+                      >
+                        Download
+                      </Button>
+                    )
                   }
-                  secondary="Application for partner migration"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <DocumentIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Link 
-                      href="https://immi.homeaffairs.gov.au/form-listing/forms/40sp.pdf" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Form 40SP
-                    </Link>
-                  }
-                  secondary="Sponsorship for a partner to migrate to Australia"
-                />
-              </ListItem>
+                >
+                  <ListItemIcon>
+                    <GuideIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={guide.title}
+                    secondary={guide.description}
+                  />
+                </ListItem>
+              ))}
             </List>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Frequently Asked Questions
-            </Typography>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <HelpIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="What evidence do I need to provide?"
-                  secondary="You need to provide evidence of your relationship in four categories: financial aspects, social aspects, nature of household, and nature of commitment."
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <HelpIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="How long does processing take?"
-                  secondary="Processing times vary, but typically range from 12 to 24 months. Check the Department's website for current processing times."
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <HelpIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Can I work while waiting for the visa?"
-                  secondary="If you applied onshore and hold a bridging visa, you may have work rights. Check your bridging visa conditions."
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <HelpIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Do I need to translate documents?"
-                  secondary="Yes, any documents not in English must be translated by a NAATI accredited translator."
-                />
-              </ListItem>
-            </List>
-          </Paper>
+          </ContentCard>
         </Grid>
       </Grid>
-    </Container>
+    </Box>
   );
 };
 

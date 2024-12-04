@@ -1,235 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
+  Box,
   Grid,
   LinearProgress,
-  Box,
-  Button,
-  Typography,
   IconButton,
-  Tooltip,
+  Typography,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
-  Delete as DeleteIcon,
   CheckCircle as CheckIcon,
+  Warning as WarningIcon,
+  Error as ErrorIcon,
+  Delete as DeleteIcon,
   Info as InfoIcon,
-  Visibility as ViewIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
 import ContentCard from '../components/common/ContentCard';
 import { useToast } from '../components/common/Toast';
+import { useProgress } from '../contexts/ProgressContext';
 
 interface Document {
   id: string;
   name: string;
   description: string;
   required: boolean;
-  helpText: string;
-  sampleUrl?: string;
-  file?: File;
   status: 'pending' | 'uploaded' | 'error';
   errorMessage?: string;
+  uploadDate?: Date;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
-
-const requiredDocuments: Document[] = [
-  {
-    id: 'passport',
-    name: 'Passport',
-    description: 'Valid passport with at least 6 months validity',
-    required: true,
-    helpText: 'Ensure all pages are clear and readable. Include both current and expired passports if applicable.',
-    status: 'pending',
-  },
-  {
-    id: 'birthCertificate',
-    name: 'Birth Certificate',
-    description: 'Original or certified copy',
-    required: true,
-    helpText: 'Must be officially translated if not in English. Include both original and translation.',
-    status: 'pending',
-  },
-  {
-    id: 'policeCheck',
-    name: 'Police Clearance',
-    description: 'From all countries where you lived for 12+ months',
-    required: true,
-    helpText: 'Police certificates must cover your entire period of stay in each country.',
-    status: 'pending',
-  },
-];
-
-const optionalDocuments: Document[] = [
-  {
-    id: 'previousVisas',
-    name: 'Previous Visas',
-    description: 'Copies of previous visas if applicable',
-    required: false,
-    helpText: 'Include all previous Australian visas and significant visas from other countries.',
-    status: 'pending',
-  },
-  {
-    id: 'travelHistory',
-    name: 'Travel History',
-    description: 'Documentation of previous international travel',
-    required: false,
-    helpText: 'Include passport stamps, boarding passes, or travel itineraries showing your travel history.',
-    status: 'pending',
-  },
-];
-
 const DocumentsPage: React.FC = () => {
-  const [documents, setDocuments] = useState<Document[]>([...requiredDocuments, ...optionalDocuments]);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([
+    {
+      id: '1',
+      name: 'Passport',
+      description: 'Current passport photo page',
+      required: true,
+      status: 'pending',
+    },
+    {
+      id: '2',
+      name: 'Birth Certificate',
+      description: 'Original or certified copy',
+      required: true,
+      status: 'pending',
+    },
+    {
+      id: '3',
+      name: 'Police Clearance',
+      description: 'From all countries lived in',
+      required: true,
+      status: 'pending',
+    },
+    {
+      id: '4',
+      name: 'Photos Together',
+      description: 'Photos showing relationship',
+      required: false,
+      status: 'pending',
+    },
+    {
+      id: '5',
+      name: 'Joint Bank Statements',
+      description: 'Showing financial relationship',
+      required: false,
+      status: 'pending',
+    },
+  ]);
+
   const { showToast } = useToast();
+  const { updateDocumentsProgress } = useProgress();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
-  const validateFile = (file: File): { isValid: boolean; error?: string } => {
-    if (file.size > MAX_FILE_SIZE) {
-      return { isValid: false, error: 'File size exceeds 5MB limit' };
-    }
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return { isValid: false, error: 'Only PDF, JPG, and PNG files are allowed' };
-    }
-    return { isValid: true };
-  };
+  const requiredDocuments = documents.filter((doc) => doc.required);
+  const optionalDocuments = documents.filter((doc) => !doc.required);
 
-  const handleFileUpload = (documentId: string) => async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const validation = validateFile(file);
-      if (!validation.isValid) {
-        setDocuments((prev) =>
-          prev.map((doc) =>
-            doc.id === documentId
-              ? { ...doc, status: 'error', errorMessage: validation.error }
-              : doc
-          )
-        );
-        showToast(validation.error || 'Upload failed', 'error');
-        return;
-      }
+  useEffect(() => {
+    const requiredUploaded = requiredDocuments.filter(doc => doc.status === 'uploaded').length;
+    const optionalUploaded = optionalDocuments.filter(doc => doc.status === 'uploaded').length;
+    updateDocumentsProgress(requiredUploaded, optionalUploaded);
+  }, [documents, updateDocumentsProgress]);
 
-      // Simulate file upload with a delay
-      try {
-        setDocuments((prev) =>
-          prev.map((doc) =>
-            doc.id === documentId
-              ? { ...doc, file, status: 'uploaded', errorMessage: undefined }
-              : doc
-          )
-        );
-        showToast('Document uploaded successfully', 'success');
-      } catch (error) {
-        setDocuments((prev) =>
-          prev.map((doc) =>
-            doc.id === documentId
-              ? { ...doc, status: 'error', errorMessage: 'Upload failed' }
-              : doc
-          )
-        );
-        showToast('Failed to upload document', 'error');
-      }
-    }
-  };
-
-  const handleDelete = (documentId: string) => {
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === documentId
-          ? { ...doc, file: undefined, status: 'pending', errorMessage: undefined }
-          : doc
-      )
-    );
-    showToast('Document removed', 'info');
-  };
-
-  const handleViewSample = (document: Document) => {
-    setSelectedDocument(document);
+  const handleUpload = async (doc: Document) => {
+    // Simulated upload process
+    setSelectedDocument(doc);
     setOpenDialog(true);
   };
 
+  const handleConfirmUpload = () => {
+    if (selectedDocument) {
+      const updatedDocuments = documents.map((doc): Document =>
+        doc.id === selectedDocument.id
+          ? { ...doc, status: 'uploaded' as const, uploadDate: new Date() }
+          : doc
+      );
+      setDocuments(updatedDocuments);
+      showToast(`${selectedDocument.name} uploaded successfully`, 'success');
+      handleCloseDialog();
+    }
+  };
+
+  const handleDelete = (doc: Document) => {
+    const updatedDocuments = documents.map((d): Document =>
+      d.id === doc.id ? { ...d, status: 'pending' as const, uploadDate: undefined } : d
+    );
+    setDocuments(updatedDocuments);
+    showToast(`${doc.name} removed`, 'info');
+  };
+
   const calculateProgress = (docs: Document[]) => {
-    const uploadedCount = docs.filter((doc) => doc.status === 'uploaded').length;
-    return (uploadedCount / docs.length) * 100;
+    if (docs.length === 0) return 0;
+    const uploaded = docs.filter((doc) => doc.status === 'uploaded').length;
+    return Math.round((uploaded / docs.length) * 100);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'uploaded':
+        return <CheckIcon color="success" />;
+      case 'error':
+        return <ErrorIcon color="error" />;
+      default:
+        return <WarningIcon color="warning" />;
+    }
   };
 
   const DocumentList: React.FC<{ documents: Document[] }> = ({ documents }) => (
-    <Grid container spacing={3}>
+    <List>
       {documents.map((doc) => (
-        <Grid item xs={12} key={doc.id}>
-          <ContentCard
-            title={doc.name}
-            subtitle={doc.description}
-            icon={<InfoIcon />}
-            elevation={1}
-          >
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
+        <ListItem key={doc.id}>
+          <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
+          <ListItemText
+            primary={doc.name}
+            secondary={
+              <>
                 {doc.description}
-              </Typography>
-              <Tooltip title={doc.helpText} arrow placement="top">
-                <IconButton size="small" color="primary" sx={{ ml: 1 }}>
-                  <InfoIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {doc.status === 'uploaded' ? (
-                <>
-                  <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckIcon fontSize="small" />
-                    {doc.file?.name}
+                {doc.uploadDate && (
+                  <Typography variant="caption" display="block">
+                    Uploaded: {doc.uploadDate.toLocaleDateString()}
                   </Typography>
-                  <IconButton size="small" color="error" onClick={() => handleDelete(doc.id)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </>
-              ) : (
-                <>
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    startIcon={<UploadIcon />}
-                    size="small"
-                  >
-                    Upload
-                    <input
-                      type="file"
-                      hidden
-                      accept={ALLOWED_TYPES.join(',')}
-                      onChange={handleFileUpload(doc.id)}
-                    />
-                  </Button>
-                  {doc.sampleUrl && (
-                    <Button
-                      startIcon={<ViewIcon />}
-                      size="small"
-                      onClick={() => handleViewSample(doc)}
-                    >
-                      View Sample
-                    </Button>
-                  )}
-                </>
-              )}
-            </Box>
-            {doc.status === 'error' && doc.errorMessage && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {doc.errorMessage}
-              </Alert>
+                )}
+              </>
+            }
+          />
+          <ListItemSecondaryAction>
+            {doc.status === 'uploaded' ? (
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => handleDelete(doc)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            ) : (
+              <IconButton
+                edge="end"
+                aria-label="upload"
+                onClick={() => handleUpload(doc)}
+              >
+                <UploadIcon />
+              </IconButton>
             )}
-          </ContentCard>
-        </Grid>
+          </ListItemSecondaryAction>
+        </ListItem>
       ))}
-    </Grid>
+    </List>
   );
 
   const handleCloseDialog = () => {
@@ -285,18 +231,46 @@ const DocumentsPage: React.FC = () => {
           </ContentCard>
         </Grid>
       </Grid>
-      
+
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Sample Document</DialogTitle>
+        <DialogTitle>Upload Document</DialogTitle>
         <DialogContent>
-          {selectedDocument && (
-            <Typography>
-              Sample content for {selectedDocument.name}
-            </Typography>
-          )}
+          <Typography variant="body1" gutterBottom>
+            Ready to upload {selectedDocument?.name}?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Please ensure your document meets the following requirements:
+          </Typography>
+          <List>
+            <ListItem>
+              <ListItemIcon>
+                <InfoIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="Clear, legible scan or photo" />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon>
+                <InfoIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="All pages included" />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon>
+                <InfoIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="File size under 10MB" />
+            </ListItem>
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Close</Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleConfirmUpload}
+            startIcon={<UploadIcon />}
+          >
+            Upload
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

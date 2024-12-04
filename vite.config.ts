@@ -4,7 +4,9 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    jsxRuntime: 'automatic'
+  })],
   base: '/',
   server: {
     port: 5173,
@@ -17,6 +19,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
     rollupOptions: {
       output: {
         manualChunks: {
@@ -28,6 +34,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      'react-is': path.resolve(__dirname, 'node_modules/react-is'),
     },
   },
   optimizeDeps: {
@@ -38,15 +45,23 @@ export default defineConfig({
       '@mui/material',
       '@emotion/react',
       '@emotion/styled',
-      'react-beautiful-dnd',
-      'chart.js',
-      'react-chartjs-2',
+      '@mui/x-date-pickers',
+      '@mui/x-date-pickers/AdapterDateFns',
       'date-fns',
       'html2canvas',
-      'jspdf'
+      'jspdf',
+      'prop-types',
+      'react-is'
     ],
+    exclude: ['@mui/material/utils'],
     esbuildOptions: {
       target: 'es2020',
+      define: {
+        global: 'globalThis',
+      },
+      supported: {
+        bigint: true,
+      },
     },
   },
 })

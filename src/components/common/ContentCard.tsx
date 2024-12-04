@@ -8,6 +8,8 @@ import {
   IconButton,
   Tooltip,
   useTheme,
+  SxProps,
+  Theme,
 } from '@mui/material';
 import { Info as InfoIcon } from '@mui/icons-material';
 
@@ -20,6 +22,7 @@ interface ContentCardProps {
   children: React.ReactNode;
   elevation?: number;
   noPadding?: boolean;
+  sx?: SxProps<Theme>;
 }
 
 const ContentCard: React.FC<ContentCardProps> = ({
@@ -31,6 +34,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
   children,
   elevation = 1,
   noPadding = false,
+  sx,
 }) => {
   const theme = useTheme();
 
@@ -42,6 +46,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        ...sx,
       }}
     >
       {title && (

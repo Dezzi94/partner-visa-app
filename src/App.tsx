@@ -1,31 +1,48 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import CssBaseline from '@mui/material/CssBaseline';
-import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from './theme';
-import ToastProvider from './components/common/Toast';
-import AppRoutes from './routes';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './components/common/Toast';
+import { ProgressProvider } from './contexts/ProgressContext';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import DocumentsPage from './pages/DocumentsPage';
+import FormsPage from './pages/FormsPage';
+import TimelinePage from './pages/TimelinePage';
+import InterviewPrepPage from './pages/InterviewPrepPage';
+import ResourcesPage from './pages/ResourcesPage';
+import SummaryPage from './pages/SummaryPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const App: React.FC = () => {
+function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
+      <ThemeProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
           <AuthProvider>
-            <NotificationProvider>
+            <ProgressProvider>
               <ToastProvider>
-                <AppRoutes />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Layout />}>
+                      <Route index element={<HomePage />} />
+                      <Route path="documents" element={<DocumentsPage />} />
+                      <Route path="forms" element={<FormsPage />} />
+                      <Route path="timeline" element={<TimelinePage />} />
+                      <Route path="interview-prep" element={<InterviewPrepPage />} />
+                      <Route path="resources" element={<ResourcesPage />} />
+                      <Route path="summary" element={<SummaryPage />} />
+                    </Route>
+                  </Routes>
+                </BrowserRouter>
               </ToastProvider>
-            </NotificationProvider>
+            </ProgressProvider>
           </AuthProvider>
-        </ThemeProvider>
-      </BrowserRouter>
+        </LocalizationProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
-};
+}
 
 export default App;
