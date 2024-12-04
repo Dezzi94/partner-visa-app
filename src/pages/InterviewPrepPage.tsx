@@ -46,6 +46,13 @@ interface Question {
   userAnswer?: string;
 }
 
+interface Timer {
+  isRunning: boolean;
+  seconds: number;
+}
+
+type Timeout = ReturnType<typeof setTimeout>;
+
 const InterviewPrepPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([
     {
@@ -86,9 +93,9 @@ const InterviewPrepPage: React.FC = () => {
     },
   ]);
 
-  const [timer, setTimer] = useState({
-    time: 0,
+  const [timer, setTimer] = useState<Timer>({
     isRunning: false,
+    seconds: 0,
   });
   const [practiceStats, setPracticeStats] = useState({
     questionsAnswered: 0,
@@ -108,12 +115,12 @@ const InterviewPrepPage: React.FC = () => {
   }, [questions, updateInterviewProgress]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: Timeout;
     if (timer.isRunning) {
       interval = setInterval(() => {
         setTimer(prev => ({
           ...prev,
-          time: prev.time + 1,
+          seconds: prev.seconds + 1
         }));
       }, 1000);
     }
@@ -129,8 +136,8 @@ const InterviewPrepPage: React.FC = () => {
 
   const resetTimer = () => {
     setTimer({
-      time: 0,
       isRunning: false,
+      seconds: 0,
     });
   };
 
@@ -216,7 +223,7 @@ const InterviewPrepPage: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <TimerIcon color="primary" />
               <Typography variant="h6">
-                Practice Timer: {formatTime(timer.time)}
+                Practice Timer: {formatTime(timer.seconds)}
               </Typography>
               <IconButton onClick={toggleTimer} color="primary">
                 {timer.isRunning ? <PauseIcon /> : <PlayIcon />}

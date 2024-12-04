@@ -19,7 +19,7 @@ interface ContentCardProps {
   helpText?: string;
   icon?: React.ReactNode;
   action?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   elevation?: number;
   noPadding?: boolean;
   sx?: SxProps<Theme>;

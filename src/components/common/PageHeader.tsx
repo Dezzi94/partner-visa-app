@@ -1,29 +1,33 @@
 import React from 'react';
-import { Box, Typography, Breadcrumbs, Link, Stack } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Breadcrumbs,
+  Link,
+  Stack,
+} from '@mui/material';
+import { NavigateNext as NavigateNextIcon } from '@mui/icons-material';
+
+interface Breadcrumb {
+  label: string;
+  path?: string;
+}
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
-  description?: string;
-  breadcrumbs?: Array<{
-    label: string;
-    path?: string;
-  }>;
-  actions?: React.ReactNode;
+  breadcrumbs?: Breadcrumb[];
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({
-  title,
-  subtitle,
-  description,
-  breadcrumbs,
-  actions
-}) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs }) => {
   return (
-    <Box sx={{ mb: 4 }}>
+    <Stack spacing={1}>
       {breadcrumbs && (
-        <Breadcrumbs sx={{ mb: 2 }}>
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
+          aria-label="breadcrumb"
+        >
           {breadcrumbs.map((crumb, index) => (
             crumb.path ? (
               <Link
@@ -31,10 +35,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 component={RouterLink}
                 to={crumb.path}
                 color="inherit"
-                sx={{
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
+                underline="hover"
               >
                 {crumb.label}
               </Link>
@@ -46,56 +47,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({
           ))}
         </Breadcrumbs>
       )}
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        justifyContent="space-between"
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        spacing={2}
-      >
-        <Box>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontWeight: 600,
-              color: 'text.primary',
-              mb: subtitle || description ? 1 : 0,
-            }}
-          >
-            {title}
+      
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography variant="subtitle1" color="text.secondary">
+            {subtitle}
           </Typography>
-          {subtitle && (
-            <Typography
-              variant="subtitle1"
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
-            >
-              {subtitle}
-            </Typography>
-          )}
-          {description && (
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ mt: 1 }}
-            >
-              {description}
-            </Typography>
-          )}
-        </Box>
-        {actions && (
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              gap: 2,
-              width: { xs: '100%', sm: 'auto' }
-            }}
-          >
-            {actions}
-          </Box>
         )}
-      </Stack>
-    </Box>
+      </Box>
+    </Stack>
   );
 };
 

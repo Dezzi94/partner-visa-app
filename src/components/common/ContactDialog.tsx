@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,10 +16,10 @@ interface ContactDialogProps {
 }
 
 const ContactDialog: React.FC<ContactDialogProps> = ({ open, onClose }) => {
-  const [email, setEmail] = React.useState('');
-  const [message, setMessage] = React.useState('');
+  const [email, setEmail] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     // In a real application, this would send the message to a backend
     console.log('Contact form submitted:', { email, message });
     // Reset form and close dialog
@@ -28,7 +28,7 @@ const ContactDialog: React.FC<ContactDialogProps> = ({ open, onClose }) => {
     onClose();
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     setEmail('');
     setMessage('');
     onClose();

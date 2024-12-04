@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { Snackbar, Alert, AlertColor } from '@mui/material';
-import { createContext, useContext, useState } from 'react';
 
 interface ToastContextType {
   showToast: (message: string, severity?: AlertColor) => void;
@@ -17,17 +16,17 @@ interface ToastProviderProps {
 }
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [open, setOpen] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
   const [severity, setSeverity] = useState<AlertColor>('success');
 
-  const showToast = (message: string, severity: AlertColor = 'success') => {
+  const showToast = (message: string, severity: AlertColor = 'success'): void => {
     setMessage(message);
     setSeverity(severity);
     setOpen(true);
   };
 
-  const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string): void => {
     if (reason === 'clickaway') {
       return;
     }

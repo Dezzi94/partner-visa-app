@@ -27,6 +27,7 @@ interface ProgressContextType {
   updateInterviewProgress: (completed: number, total: number) => void;
   calculateCategoryProgress: (category: keyof ProgressState) => number;
   calculateOverallProgress: () => number;
+  updateProgress: (section: keyof ProgressState, value?: number) => void;
 }
 
 const initialProgress: ProgressState = {
@@ -56,6 +57,7 @@ const ProgressContext = createContext<ProgressContextType>({
   updateInterviewProgress: () => {},
   calculateCategoryProgress: () => 0,
   calculateOverallProgress: () => 0,
+  updateProgress: () => {},
 });
 
 export const useProgress = () => useContext(ProgressContext);
@@ -120,6 +122,25 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return Math.round(totalProgress / categories.length);
   };
 
+  const updateProgress = (section: keyof ProgressState, value?: number) => {
+    if (value !== undefined) {
+      switch (section) {
+        case 'documents':
+          updateDocumentsProgress(value, progress.documents.optional);
+          break;
+        case 'forms':
+          updateFormsProgress(value, progress.forms.total);
+          break;
+        case 'timeline':
+          updateTimelineProgress(value, progress.timeline.recommended);
+          break;
+        case 'interview':
+          updateInterviewProgress(value, progress.interview.total);
+          break;
+      }
+    }
+  };
+
   return (
     <ProgressContext.Provider
       value={{
@@ -130,6 +151,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateInterviewProgress,
         calculateCategoryProgress,
         calculateOverallProgress,
+        updateProgress,
       }}
     >
       {children}
