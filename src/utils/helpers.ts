@@ -19,7 +19,7 @@ export const disconnectPort = (port: ChromePort): void => {
       port.disconnect();
     }
   } catch (error) {
-    console.warn('Error disconnecting port:', error);
+    console.debug('Port disconnection:', error);
   }
 };
 
@@ -28,5 +28,11 @@ export const disconnectPort = (port: ChromePort): void => {
  * @returns boolean indicating if Chrome extension APIs are available
  */
 export const isChromeExtension = (): boolean => {
-  return typeof window !== 'undefined' && !!window.chrome?.runtime?.connect;
+  try {
+    return typeof window !== 'undefined' && 
+           !!window.chrome?.runtime?.connect &&
+           process.env.NODE_ENV !== 'development'; // Disable in development
+  } catch {
+    return false;
+  }
 }; 

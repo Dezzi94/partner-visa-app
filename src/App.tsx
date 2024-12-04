@@ -80,7 +80,9 @@ function App() {
           <AuthProvider>
             <ProgressProvider>
               <ToastProvider>
-                <BrowserRouter>
+                <BrowserRouter future={{ 
+                  v7_startTransition: false  // Opt-out of new behavior until v7 is stable
+                }}>
                   <Routes>
                     <Route element={<Layout />}>
                       <Route index element={<HomePage />} />
