@@ -238,54 +238,53 @@ const DocumentsPage: React.FC = () => {
   };
 
   return (
-    <>
-      <Box sx={{ p: 3 }}>
-        <PageHeader
-          title="Document Checklist"
-          breadcrumbs={[
-            { label: 'Home', path: '/' },
-            { label: 'Documents' },
-          ]}
-        />
-
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <ContentCard
-              title={`Required Documents (${
-                requiredDocuments.filter((doc) => doc.status === 'uploaded').length
-              } of ${requiredDocuments.length} uploaded)`}
-              icon={<InfoIcon />}
-            >
-              <Box sx={{ mb: 3 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={calculateProgress(requiredDocuments)}
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-              </Box>
-              <DocumentList documents={requiredDocuments} />
-            </ContentCard>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <ContentCard
-              title={`Optional Documents (${
-                optionalDocuments.filter((doc) => doc.status === 'uploaded').length
-              } of ${optionalDocuments.length} uploaded)`}
-              icon={<InfoIcon />}
-            >
-              <Box sx={{ mb: 3 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={calculateProgress(optionalDocuments)}
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-              </Box>
-              <DocumentList documents={optionalDocuments} />
-            </ContentCard>
-          </Grid>
+    <Box sx={{ p: 3 }}>
+      <PageHeader
+        title="Document Checklist"
+        subtitle={`${documents.filter(d => d.status === 'uploaded').length} of ${documents.length} documents uploaded`}
+        breadcrumbs={[
+          { label: 'Home', path: '/' },
+          { label: 'Documents' },
+        ]}
+      />
+      
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={6}>
+          <ContentCard
+            title={`Required Documents (${
+              requiredDocuments.filter((doc) => doc.status === 'uploaded').length
+            } of ${requiredDocuments.length} uploaded)`}
+            icon={<InfoIcon />}
+          >
+            <Box sx={{ mb: 3 }}>
+              <LinearProgress
+                variant="determinate"
+                value={calculateProgress(requiredDocuments)}
+                sx={{ height: 8, borderRadius: 4 }}
+              />
+            </Box>
+            <DocumentList documents={requiredDocuments} />
+          </ContentCard>
         </Grid>
-      </Box>
+
+        <Grid item xs={12} md={6}>
+          <ContentCard
+            title={`Optional Documents (${
+              optionalDocuments.filter((doc) => doc.status === 'uploaded').length
+            } of ${optionalDocuments.length} uploaded)`}
+            icon={<InfoIcon />}
+          >
+            <Box sx={{ mb: 3 }}>
+              <LinearProgress
+                variant="determinate"
+                value={calculateProgress(optionalDocuments)}
+                sx={{ height: 8, borderRadius: 4 }}
+              />
+            </Box>
+            <DocumentList documents={optionalDocuments} />
+          </ContentCard>
+        </Grid>
+      </Grid>
       
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Sample Document</DialogTitle>
@@ -300,7 +299,7 @@ const DocumentsPage: React.FC = () => {
           <Button onClick={handleCloseDialog}>Close</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 
