@@ -30,7 +30,7 @@ import { useProgress } from '@/contexts/ProgressContext';
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { calculateCategoryProgress, updateProgress } = useProgress();
+  const { calculateCategoryProgress } = useProgress();
   const [infoOpen, setInfoOpen] = useState(false);
 
   const progressCards = [

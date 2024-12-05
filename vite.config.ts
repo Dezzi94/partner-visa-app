@@ -30,6 +30,8 @@ export default defineConfig({
         },
       },
     },
+    target: 'esnext',
+    minify: 'terser',
   },
   resolve: {
     alias: {
@@ -65,3 +67,4 @@ export default defineConfig({
     },
   },
 })
+
