@@ -10,27 +10,12 @@ import {
   TextField,
   MenuItem,
   IconButton,
-  Tooltip,
-  Paper,
-  Fade,
 } from '@mui/material';
-import {
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-} from '@mui/lab';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Favorite as HeartIcon,
-  Flight as TravelIcon,
-  Home as HomeIcon,
-  Event as EventIcon,
-  Description as DocumentIcon,
+  Favorite as FavoriteIcon,
   FileCopy as CopyIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -50,15 +35,6 @@ interface Milestone {
   description: string;
   location?: string;
 }
-
-const milestoneTypes = [
-  { value: 'firstMeet', label: 'First Meeting', icon: <HeartIcon /> },
-  { value: 'travel', label: 'Travel Together', icon: <TravelIcon /> },
-  { value: 'moveIn', label: 'Move In Together', icon: <HomeIcon /> },
-  { value: 'engagement', label: 'Engagement', icon: <HeartIcon /> },
-  { value: 'document', label: 'Document Submission', icon: <DocumentIcon /> },
-  { value: 'other', label: 'Other Event', icon: <EventIcon /> },
-];
 
 const STORAGE_KEY = 'relationship_milestones';
 
@@ -88,6 +64,15 @@ const TimelinePage: React.FC = () => {
     description: '',
     location: '',
   });
+
+  const milestoneTypes = [
+    { value: 'firstMeet', label: 'First Meeting' },
+    { value: 'travel', label: 'Travel Together' },
+    { value: 'moveIn', label: 'Move In Together' },
+    { value: 'engagement', label: 'Engagement' },
+    { value: 'document', label: 'Document Submission' },
+    { value: 'other', label: 'Other Event' },
+  ];
 
   // Update progress whenever milestones change
   useEffect(() => {
@@ -161,11 +146,6 @@ const TimelinePage: React.FC = () => {
     showToast('Milestone deleted', 'info');
   };
 
-  const getIconForType = (type: string) => {
-    const milestone = milestoneTypes.find(m => m.value === type);
-    return milestone?.icon || <EventIcon />;
-  };
-
   const generateStatutoryDeclaration = () => {
     const declaration = milestones.map(milestone => {
       const date = milestone.date.toLocaleDateString('en-AU', {
@@ -182,7 +162,13 @@ const TimelinePage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      minHeight: '100vh',
+      width: '100%',
+      pb: 4
+    }}>
       <PageHeader
         title="Relationship Timeline"
         subtitle="Document important milestones in your relationship for your partner visa application"
@@ -194,7 +180,12 @@ const TimelinePage: React.FC = () => {
 
       <ContentCard
         title="Your Relationship Journey"
-        icon={<HeartIcon color="error" />}
+        icon={<FavoriteIcon color="error" />}
+        sx={{ 
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column'
+        }}
       >
         <Box sx={{ 
           display: 'flex', 
@@ -225,19 +216,19 @@ const TimelinePage: React.FC = () => {
           </Box>
         </Box>
 
-        {milestones.length === 0 ? (
-          <Fade in>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {milestones.length === 0 ? (
             <Box 
               sx={{ 
                 textAlign: 'center', 
-                p: 2,
+                p: 4,
                 bgcolor: 'background.paper',
                 borderRadius: 2,
-                border: '2px dashed',
-                borderColor: 'divider'
+                border: '1px dashed',
+                borderColor: 'divider',
+                m: 2
               }}
             >
-              <EventIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
                 Start Your Journey
               </Typography>
@@ -252,71 +243,128 @@ const TimelinePage: React.FC = () => {
                 Add First Milestone
               </Button>
             </Box>
-          </Fade>
-        ) : (
-          <Timeline position="alternate">
-            {milestones.map((milestone, index) => (
-              <Fade in key={milestone.id} style={{ transitionDelay: `${index * 100}ms` }}>
-                <TimelineItem>
-                  <TimelineSeparator>
-                    <TimelineDot color="primary">
-                      {getIconForType(milestone.type)}
-                    </TimelineDot>
-                    <TimelineConnector />
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <Paper
-                      elevation={1}
+          ) : (
+            <Box sx={{ 
+              position: 'relative',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '1px',
+                height: '100%',
+                bgcolor: 'rgba(144, 202, 249, 0.5)',
+                zIndex: 0
+              }
+            }}>
+              {milestones.map((milestone, index) => (
+                <Box
+                  key={milestone.id}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    position: 'relative',
+                    mb: 3,
+                    '&:last-child': {
+                      mb: 0
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      zIndex: 1
+                    }}
+                  >
+                    <Box
                       sx={{
-                        p: 3,
-                        borderRadius: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: (theme) => theme.shadows[3],
-                        }
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        bgcolor: '#1976d2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      <Typography variant="h6" gutterBottom>
-                        {milestone.title}
-                      </Typography>
-                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        {format(milestone.date, 'PPP')}
-                      </Typography>
-                      {milestone.location && (
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
-                          📍 {milestone.location}
+                      <FavoriteIcon sx={{ color: '#fff', fontSize: 24 }} />
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      maxWidth: '45%',
+                      ml: index % 2 === 0 ? 0 : 'auto',
+                      mr: index % 2 === 0 ? 'auto' : 0,
+                      bgcolor: (theme) => theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff',
+                      borderRadius: 2,
+                      p: 3,
+                      position: 'relative',
+                      boxShadow: 1
+                    }}
+                  >
+                    <Box sx={{ 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      mb: 2
+                    }}>
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                          {milestone.title}
                         </Typography>
-                      )}
-                      <Typography variant="body1" paragraph>
-                        {milestone.description}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit milestone">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenDialog(milestone)}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete milestone">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteMilestone(milestone.id)}
-                            color="error"
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                        <Typography variant="body2" color="text.secondary">
+                          {format(milestone.date, 'MMMM do, yyyy')}
+                        </Typography>
                       </Box>
-                    </Paper>
-                  </TimelineContent>
-                </TimelineItem>
-              </Fade>
-            ))}
-          </Timeline>
-        )}
+                      <Box sx={{ 
+                        display: 'flex',
+                        gap: 0.5
+                      }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenDialog(milestone)}
+                          sx={{ 
+                            color: 'text.secondary',
+                            '&:hover': { color: '#90caf9' }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteMilestone(milestone.id)}
+                          sx={{ 
+                            color: 'text.secondary',
+                            '&:hover': { color: '#f44336' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    
+                    {milestone.location && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        📍 {milestone.location}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      {milestone.description}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
       </ContentCard>
 
       <Dialog
@@ -349,10 +397,7 @@ const TimelinePage: React.FC = () => {
             >
               {milestoneTypes.map((type) => (
                 <MenuItem key={type.value} value={type.value}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {type.icon}
-                    {type.label}
-                  </Box>
+                  {type.label}
                 </MenuItem>
               ))}
             </TextField>
