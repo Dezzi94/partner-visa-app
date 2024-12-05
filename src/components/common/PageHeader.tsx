@@ -18,9 +18,10 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   breadcrumbs?: Breadcrumb[];
+  icon?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, icon }) => {
   return (
     <Stack spacing={1}>
       {breadcrumbs && (
@@ -49,9 +50,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs })
       )}
       
       <Box>
-        <Typography variant="h4" gutterBottom>
-          {title}
-        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+          {icon}
+          <Typography variant="h4">
+            {title}
+          </Typography>
+        </Stack>
         {subtitle && (
           <Typography variant="subtitle1" color="text.secondary">
             {subtitle}

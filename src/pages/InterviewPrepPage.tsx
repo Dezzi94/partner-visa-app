@@ -3,311 +3,285 @@ import {
   Box,
   Typography,
   Button,
+  Container,
+  Paper,
+  Stack,
+  LinearProgress,
+  IconButton,
+  Collapse,
+  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Card,
   TextField,
-  LinearProgress,
-  Tooltip,
-  Container,
-  alpha,
-  useTheme,
-  Paper,
-  Stack,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
-  Divider,
-  IconButton,
-  Tab,
-  Tabs,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  CircularProgress,
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
   Refresh as RefreshIcon,
-  ArrowForward as ArrowIcon,
+  Edit as EditIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  MoreVert as MoreVertIcon,
   QuestionAnswer as QuestionIcon,
-  Info as InfoIcon,
-  Build as BuildIcon,
-  HelpOutline as HelpIcon,
-  Download as DownloadIcon,
+  History as HistoryIcon,
+  Delete as DeleteIcon,
   Save as SaveIcon,
-  Close as CloseIcon,
+  AutoAwesome as AutoAwesomeIcon,
 } from '@mui/icons-material';
 import PageHeader from '../components/common/PageHeader';
-import { useToast } from '../components/common/Toast';
-
-interface QuestionProgress {
-  review: boolean;
-  practice: boolean;
-  build: boolean;
-}
 
 interface Question {
   id: string;
   question: string;
-  tips: string;
-  completed: boolean;
-  userAnswer?: string;
-  progress: QuestionProgress;
+  tips: string[];
+  exampleAnswer: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  score?: number;
+  answer?: string;
 }
 
 const INITIAL_QUESTIONS: Question[] = [
   {
     id: '1',
-    question: "What cultural differences have you experienced?",
-    tips: "Discuss how you handle and respect cultural differences.",
-    completed: false,
-    progress: { review: false, practice: false, build: false },
+    question: 'How did you meet your partner?',
+    tips: ['Be specific about the date, location, and circumstances.'],
+    exampleAnswer: 'We first met on March 15, 2021, at a mutual friend\'s birthday party at Cafe Luna. We were introduced by our friend Sarah and spent the evening discussing our shared interest in travel and photography. I remember being particularly impressed by their stories about backpacking through Southeast Asia.',
+    status: 'not_started',
   },
   {
     id: '2',
-    question: "How has your relationship developed?",
-    tips: "Mention key milestones and shared experiences.",
-    completed: false,
-    progress: { review: false, practice: false, build: false },
+    question: 'How has your relationship developed?',
+    tips: [
+      'Focus on key milestones and growth',
+      'Include specific examples of shared experiences',
+      'Mention how you overcame challenges together'
+    ],
+    exampleAnswer: 'Our relationship has grown through shared experiences and challenges. We started with regular coffee dates and weekend outings, which evolved into deeper conversations about our future. We moved in together after a year, which helped us understand each other better. We\'ve supported each other through career changes and family challenges, strengthening our bond.',
+    status: 'not_started',
   },
   {
     id: '3',
-    question: "What are your future plans together?",
-    tips: "Discuss both short-term and long-term goals.",
-    completed: false,
-    progress: { review: false, practice: false, build: false },
+    question: 'What are your shared interests and activities?',
+    tips: [
+      'Describe specific activities you enjoy together',
+      'Mention how these activities strengthen your relationship',
+      'Include both regular activities and special occasions'
+    ],
+    exampleAnswer: 'We share a passion for outdoor photography and hiking. Every weekend, we explore new trails and capture nature\'s beauty together. We also enjoy cooking international cuisines, often recreating dishes from our travels. These shared activities have helped us grow closer and create lasting memories.',
+    status: 'not_started',
   },
+  {
+    id: '4',
+    question: 'How do you handle cultural differences in your relationship?',
+    tips: [
+      'Discuss specific examples of cultural differences',
+      'Explain how you respect and embrace each other\'s cultures',
+      'Mention how you\'ve integrated both cultures into your relationship'
+    ],
+    exampleAnswer: 'We embrace our cultural differences as opportunities for growth. For example, we celebrate both of our traditional holidays and have learned each other\'s languages. We\'ve also introduced our families to our respective cultural traditions, creating a beautiful blend of both worlds.',
+    status: 'not_started',
+  },
+  {
+    id: '5',
+    question: 'What are your future plans together?',
+    tips: [
+      'Be specific about short-term and long-term goals',
+      'Show that you\'ve discussed and agreed on these plans',
+      'Include both personal and professional aspirations'
+    ],
+    exampleAnswer: 'We\'ve carefully planned our future together. In the short term, we\'re focusing on establishing our home and advancing our careers. Long-term, we plan to start a family and potentially relocate to a larger home in a family-friendly neighborhood. We\'ve also discussed our retirement goals and how we\'ll support our extended families.',
+    status: 'not_started',
+  },
+  {
+    id: '6',
+    question: 'How do you communicate and resolve conflicts?',
+    tips: [
+      'Provide specific examples of how you handle disagreements',
+      'Emphasize mutual respect and understanding',
+      'Show how you\'ve grown stronger through resolving conflicts'
+    ],
+    exampleAnswer: 'We believe in open, honest communication. When conflicts arise, we take time to listen to each other\'s perspectives without judgment. For example, when we disagreed about our holiday plans, we sat down and found a compromise that made both of us happy. We always ensure we\'re working together as a team.',
+    status: 'not_started',
+  },
+  {
+    id: '7',
+    question: 'How do you support each other?',
+    tips: [
+      'Include both emotional and practical support',
+      'Give specific examples of challenging times',
+      'Show how you\'ve helped each other grow'
+    ],
+    exampleAnswer: 'We support each other in various ways. When my partner was studying for their professional certification, I took on more household responsibilities and provided emotional encouragement. Similarly, they supported me during my career transition, offering both practical advice and emotional stability.',
+    status: 'not_started',
+  },
+  {
+    id: '8',
+    question: 'What role do your families play in your relationship?',
+    tips: [
+      'Describe your relationship with each other\'s families',
+      'Mention how you handle family obligations',
+      'Show respect for family traditions and values'
+    ],
+    exampleAnswer: 'Our families are an important part of our relationship. We regularly visit both families and include them in major decisions. We\'ve worked to build strong relationships with our in-laws, respecting their traditions while establishing our own. Both families have been supportive of our relationship and future plans.',
+    status: 'not_started',
+  },
+  {
+    id: '9',
+    question: 'How do you manage your finances together?',
+    tips: [
+      'Explain your financial arrangement',
+      'Show financial responsibility and planning',
+      'Demonstrate mutual trust and agreement'
+    ],
+    exampleAnswer: 'We maintain a transparent and collaborative approach to finances. We have both joint and individual accounts, and we make major financial decisions together. We\'ve created a budget that reflects our shared goals while respecting individual needs. We regularly discuss our financial plans and adjust them as needed.',
+    status: 'not_started',
+  },
+  {
+    id: '10',
+    question: 'What challenges have you faced and overcome together?',
+    tips: [
+      'Describe specific challenges you\'ve faced',
+      'Explain how you worked together to overcome them',
+      'Show how these experiences strengthened your relationship'
+    ],
+    exampleAnswer: 'One significant challenge we faced was maintaining our relationship during the COVID-19 lockdown. We used daily video calls and online date nights to stay connected. We also supported each other through job uncertainties and health concerns. These experiences have made our relationship stronger and more resilient.',
+    status: 'not_started',
+  }
 ];
 
-interface BuildResponse {
-  situation: string;
-  task: string;
-  action: string;
-  result: string;
-  notes: string;
-}
-
-const EMPTY_BUILD_RESPONSE: BuildResponse = {
-  situation: '',
-  task: '',
-  action: '',
-  result: '',
-  notes: '',
-};
-
-const STAR_TIPS = {
-  situation: "Set the scene and provide context. When and where did this happen?",
-  task: "Explain the challenge or objective you faced. What needed to be done?",
-  action: "Describe the specific steps you took. How did you handle it?",
-  result: "Share the outcomes of your actions. What was achieved?",
-};
-
 const InterviewPrepPage: React.FC = () => {
-  const theme = useTheme();
   const [questions, setQuestions] = useState<Question[]>(INITIAL_QUESTIONS);
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [practiceDialogOpen, setPracticeDialogOpen] = useState(false);
   const [answer, setAnswer] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [timer, setTimer] = useState({ isRunning: false, seconds: 0 });
-  const [progress, setProgress] = useState({ completed: 0, total: INITIAL_QUESTIONS.length });
-  const { showToast } = useToast();
-  const [buildDialogOpen, setBuildDialogOpen] = useState(false);
-  const [buildResponse, setBuildResponse] = useState<BuildResponse>(EMPTY_BUILD_RESPONSE);
-  const [activeStep, setActiveStep] = useState(0);
-  const [previewTab, setPreviewTab] = useState(0);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (timer.isRunning) {
+    if (isTimerRunning) {
       interval = setInterval(() => {
-        setTimer(prev => ({ ...prev, seconds: prev.seconds + 1 }));
+        setTimer(prev => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [timer.isRunning]);
-
-  useEffect(() => {
-    const completed = questions.filter(q => q.completed).length;
-    setProgress({ completed, total: questions.length });
-  }, [questions]);
+  }, [isTimerRunning]);
 
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handleStartPractice = (question: Question) => {
+  const handleStartTimer = () => setIsTimerRunning(true);
+  const handlePauseTimer = () => setIsTimerRunning(false);
+  const handleResetTimer = () => {
+    setIsTimerRunning(false);
+    setTimer(0);
+  };
+
+  const handleStartAgain = () => {
+    handleResetTimer();
+    setQuestions(INITIAL_QUESTIONS);
+    setSelectedQuestion(null);
+    setPracticeDialogOpen(false);
+    setAnswer('');
+  };
+
+  const getProgress = () => {
+    const completed = questions.filter(q => q.status === 'completed').length;
+    return `${completed}/${questions.length} questions answered`;
+  };
+
+  const getTotalScore = () => {
+    const total = questions.reduce((sum, q) => sum + (q.score || 0), 0);
+    return `${total}/10`;
+  };
+
+  const handleToggleQuestion = (questionId: string) => {
+    setExpandedQuestionId(expandedQuestionId === questionId ? null : questionId);
+  };
+
+  const handlePractice = (question: Question) => {
     setSelectedQuestion(question);
-    setAnswer(question.userAnswer || '');
-    setOpenDialog(true);
-    if (!timer.isRunning && !question.completed) {
-      setTimer(prev => ({ ...prev, isRunning: true }));
+    setPracticeDialogOpen(true);
+    setAnswer(question.answer || '');
+    if (!isTimerRunning) {
+      handleStartTimer();
     }
   };
 
   const handleSaveAnswer = () => {
-    if (!selectedQuestion || !answer.trim()) return;
-    
-    const updatedQuestions = questions.map(q =>
-      q.id === selectedQuestion.id
-        ? { 
-            ...q, 
-            completed: true, 
-            userAnswer: answer,
-            progress: { ...q.progress, practice: true }
-          }
-        : q
-    );
-    
-    setQuestions(updatedQuestions);
-    setOpenDialog(false);
-    showToast('Answer saved successfully!', 'success');
-  };
-
-  const handleReview = (question: Question) => {
-    if (!question.progress.practice) return;
-    setSelectedQuestion(question);
-    setAnswer(question.userAnswer || '');
-    setOpenDialog(true);
-  };
-
-  const handleBuild = (question: Question) => {
-    if (!question.progress.practice) return;
-    setSelectedQuestion(question);
-    setBuildResponse(EMPTY_BUILD_RESPONSE);
-    setActiveStep(0);
-    setBuildDialogOpen(true);
-  };
-
-  const handleBuildSave = () => {
     if (!selectedQuestion) return;
     
-    // Combine STAR sections into a complete answer
-    const fullAnswer = [
-      `Situation: ${buildResponse.situation}`,
-      `Task: ${buildResponse.task}`,
-      `Action: ${buildResponse.action}`,
-      `Result: ${buildResponse.result}`,
-      buildResponse.notes ? `Additional Notes: ${buildResponse.notes}` : '',
-    ].filter(Boolean).join('\n\n');
+    setQuestions(prev => prev.map(q => {
+      if (q.id === selectedQuestion.id) {
+        return {
+          ...q,
+          status: 'completed',
+          answer: answer,
+          score: 5, // You can implement proper scoring logic here
+        };
+      }
+      return q;
+    }));
 
-    const updatedQuestions = questions.map(q =>
-      q.id === selectedQuestion.id
-        ? { 
-            ...q, 
-            completed: true, 
-            userAnswer: fullAnswer,
-            progress: { ...q.progress, build: true }
-          }
-        : q
-    );
-    
-    setQuestions(updatedQuestions);
-    setBuildDialogOpen(false);
-    showToast('Response built and saved successfully!', 'success');
+    setPracticeDialogOpen(false);
   };
 
-  const handleDownload = () => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, question: Question) => {
+    event.stopPropagation();
+    setSelectedQuestion(question);
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleDeleteAnswer = () => {
     if (!selectedQuestion) return;
+    
+    setQuestions(prev => prev.map(q => {
+      if (q.id === selectedQuestion.id) {
+        return {
+          ...q,
+          status: 'not_started',
+          answer: undefined,
+          score: undefined,
+        };
+      }
+      return q;
+    }));
 
-    const content = `
-Interview Question: ${selectedQuestion.question}
-
-STAR Method Response:
--------------------
-Situation:
-${buildResponse.situation}
-
-Task:
-${buildResponse.task}
-
-Action:
-${buildResponse.action}
-
-Result:
-${buildResponse.result}
-
-Additional Notes:
-${buildResponse.notes}
-    `.trim();
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `interview-response-${selectedQuestion.id}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    handleMenuClose();
   };
 
-  const handleBuildStepChange = (step: number) => {
-    setActiveStep(step);
+  const handleViewHistory = () => {
+    // Implement view history functionality
+    handleMenuClose();
   };
 
-  const getStepContent = (step: number) => {
-    const fields: { [key: number]: keyof BuildResponse } = {
-      0: 'situation',
-      1: 'task',
-      2: 'action',
-      3: 'result',
-      4: 'notes',
-    };
-
-    const field = fields[step];
-    if (!field) return null;
-
-    return (
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          {STAR_TIPS[field as keyof typeof STAR_TIPS] || "Add any additional notes or key points"}
-        </Typography>
-        <TextField
-          multiline
-          rows={4}
-          fullWidth
-          value={buildResponse[field]}
-          onChange={(e) => setBuildResponse(prev => ({ ...prev, [field]: e.target.value }))}
-          placeholder={`Enter your ${field}`}
-          variant="outlined"
-        />
-      </Box>
-    );
-  };
-
-  const getPreviewContent = () => {
-    if (previewTab === 0) {
-      // Structured View
-      return (
-        <Stack spacing={2}>
-          {Object.entries(buildResponse).map(([section, value]) => (
-            value && (
-              <Box key={section}>
-                <Typography variant="subtitle1" color="primary" gutterBottom sx={{ textTransform: 'capitalize' }}>
-                  {section}
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  {value}
-                </Typography>
-              </Box>
-            )
-          ))}
-        </Stack>
-      );
-    } else {
-      // Continuous View
-      return (
-        <Typography variant="body1">
-          {Object.entries(buildResponse)
-            .filter(([_, value]) => value)
-            .map(([_, value]) => value)
-            .join('\n\n')}
-        </Typography>
-      );
-    }
+  const handleEnhanceAnswer = async () => {
+    if (!answer.trim()) return;
+    
+    setIsEnhancing(true);
+    // Simulate AI enhancement
+    setTimeout(() => {
+      const enhancedAnswer = `${answer}\n\nEnhanced version:\n\nI met my partner on March 15, 2021, at a vibrant birthday celebration for our mutual friend at Cafe Luna. Sarah, our mutual friend, made the introduction, recognizing our shared passions. Throughout the evening, we found ourselves deeply engaged in conversations about travel and photography, discovering our mutual love for exploration. What particularly caught my attention was their captivating stories about backpacking through Southeast Asia, which revealed their adventurous spirit and cultural curiosity. This initial connection through shared interests laid the foundation for our relationship.`;
+      setAnswer(enhancedAnswer);
+      setIsEnhancing(false);
+    }, 1500);
   };
 
   return (
@@ -315,371 +289,225 @@ ${buildResponse.notes}
       <PageHeader
         title="Interview Preparation"
         subtitle="Practice answering common partner visa interview questions"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Interview Practice' },
-        ]}
+        icon={<QuestionIcon color="primary" />}
       />
 
-      {/* Timer and Progress Section */}
-      <Paper 
-        elevation={0}
-        sx={{ 
-          p: 4,
-          mb: 4,
-          borderRadius: 2,
-          bgcolor: alpha(theme.palette.primary.main, 0.05),
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-        }}
-      >
-        <Stack spacing={4}>
-          {/* Timer */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h2" sx={{ 
-              fontFamily: 'monospace',
-              fontWeight: 600,
-              color: theme.palette.primary.main,
-              mb: 2,
-              fontSize: { xs: '2.5rem', sm: '3.5rem' }
-            }}>
-              {formatTime(timer.seconds)}
-            </Typography>
-            <Stack direction="row" spacing={2} justifyContent="center">
-              <Tooltip title={timer.isRunning ? "Pause Practice" : "Start Practice"}>
-                <Button
-                  variant="contained"
-                  onClick={() => setTimer(prev => ({ ...prev, isRunning: !prev.isRunning }))}
-                  startIcon={timer.isRunning ? <PauseIcon /> : <PlayIcon />}
-                  color={timer.isRunning ? "error" : "primary"}
-                >
-                  {timer.isRunning ? "Pause" : "Start"}
-                </Button>
-              </Tooltip>
-              <Tooltip title="Reset Timer">
-                <Button
-                  variant="outlined"
-                  onClick={() => setTimer({ isRunning: false, seconds: 0 })}
-                  startIcon={<RefreshIcon />}
-                >
-                  Reset
-                </Button>
-              </Tooltip>
+      <Box sx={{ mb: 4, bgcolor: 'background.paper', p: 3, borderRadius: 1 }}>
+        <Stack spacing={3}>
+          {/* Timer and Progress Section */}
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={1} alignItems="center">
+              <QuestionIcon />
+              <Typography>Practice Timer: {formatTime(timer)}</Typography>
+              {!isTimerRunning ? (
+                <IconButton onClick={handleStartTimer} size="small">
+                  <PlayIcon />
+                </IconButton>
+              ) : (
+                <IconButton onClick={handlePauseTimer} size="small">
+                  <PauseIcon />
+                </IconButton>
+              )}
+              <IconButton onClick={handleResetTimer} size="small">
+                <RefreshIcon />
+              </IconButton>
             </Stack>
-          </Box>
+          </Stack>
 
-          {/* Progress */}
-          <Box>
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-              <Typography variant="h6">
-                {progress.completed} of {progress.total} Questions Completed
-              </Typography>
-              <Tooltip title="Complete all questions to prepare for your interview">
-                <HelpIcon fontSize="small" color="action" />
-              </Tooltip>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={(progress.completed / progress.total) * 100}
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 4,
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                },
-              }}
+          <Stack spacing={1}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography>Progress: {getProgress()}</Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography>Total Score: {getTotalScore()}</Typography>
+                <Button
+                  startIcon={<RefreshIcon />}
+                  variant="outlined"
+                  onClick={handleStartAgain}
+                  size="small"
+                >
+                  Start Again
+                </Button>
+              </Stack>
+            </Stack>
+            <LinearProgress 
+              variant="determinate" 
+              value={(questions.filter(q => q.status === 'completed').length / questions.length) * 100}
+              sx={{ height: 4, borderRadius: 2 }}
             />
-          </Box>
+          </Stack>
         </Stack>
-      </Paper>
+      </Box>
 
       {/* Questions Section */}
-      <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        Practice Questions
-        <Tooltip title="Click 'Practice' to start answering questions">
-          <HelpIcon fontSize="small" color="action" />
-        </Tooltip>
-      </Typography>
+      <Box>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <QuestionIcon />
+          Practice Questions
+        </Typography>
 
-      <Stack spacing={2}>
-        {questions.map((question, index) => (
-          <Card
-            key={question.id}
-            sx={{
-              borderRadius: 2,
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: theme.shadows[4],
-              },
-            }}
-          >
-            <Box sx={{ p: 3 }}>
+        <Stack spacing={2}>
+          {questions.map((question) => (
+            <Paper 
+              key={question.id} 
+              sx={{ 
+                p: 2,
+                bgcolor: 'background.paper',
+                borderRadius: 1,
+              }}
+            >
               <Stack spacing={2}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
-                  {/* Question Number */}
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                      fontWeight: 'bold',
-                      fontSize: '1.25rem',
-                    }}
-                  >
-                    {index + 1}
-                  </Box>
-
-                  {/* Question Content */}
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" gutterBottom>
-                      {question.question}
-                    </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <QuestionIcon />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography>{question.question}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {question.tips}
+                      {question.status === 'not_started' ? '○ Not started' : question.status === 'completed' ? '✓ Completed' : '► In Progress'}
                     </Typography>
                   </Box>
-
-                  {/* Actions */}
                   <Stack direction="row" spacing={1}>
-                    <Tooltip title={question.progress.practice ? "Review your answer" : "Practice first to review"}>
-                      <span>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<InfoIcon />}
-                          disabled={!question.progress.practice}
-                          onClick={() => handleReview(question)}
-                          sx={{ minWidth: 100 }}
-                        >
-                          Review
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title="Practice answering">
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<QuestionIcon />}
-                        onClick={() => handleStartPractice(question)}
-                        sx={{ minWidth: 100 }}
-                      >
-                        Practice
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title={question.progress.practice ? "Build your answer" : "Practice first to build"}>
-                      <span>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<BuildIcon />}
-                          disabled={!question.progress.practice}
-                          onClick={() => handleBuild(question)}
-                          sx={{ minWidth: 100 }}
-                        >
-                          Build
-                        </Button>
-                      </span>
-                    </Tooltip>
+                    <Button
+                      variant="contained"
+                      startIcon={<EditIcon />}
+                      onClick={() => handlePractice(question)}
+                      size="small"
+                    >
+                      Practice
+                    </Button>
+                    <IconButton onClick={() => handleToggleQuestion(question.id)} size="small">
+                      {expandedQuestionId === question.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
+                    <IconButton 
+                      size="small"
+                      onClick={(e) => handleMenuOpen(e, question)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
                   </Stack>
-                </Box>
+                </Stack>
 
-                {/* Progress Steps */}
-                <Box sx={{ pl: 7 }}>
-                  <Stack direction="row" spacing={3}>
-                    {['Review', 'Practice', 'Build'].map((step) => (
-                      <Box
-                        key={step}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          color: question.progress[step.toLowerCase() as keyof QuestionProgress]
-                            ? theme.palette.primary.main
-                            : theme.palette.text.disabled,
-                        }}
-                      >
-                        <ArrowIcon fontSize="small" />
-                        <Typography variant="body2">{step}</Typography>
-                      </Box>
+                <Collapse in={expandedQuestionId === question.id}>
+                  <Box sx={{ pl: 5 }}>
+                    <Typography color="primary" gutterBottom>
+                      Tips:
+                    </Typography>
+                    {question.tips.map((tip, index) => (
+                      <Typography key={index} variant="body2" paragraph>
+                        {tip}
+                      </Typography>
                     ))}
-                  </Stack>
-                </Box>
+
+                    <Typography color="primary" gutterBottom>
+                      Example Answer:
+                    </Typography>
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.900' }}>
+                      <Typography variant="body2">
+                        {question.exampleAnswer}
+                      </Typography>
+                    </Paper>
+
+                    {question.answer && (
+                      <>
+                        <Typography color="primary" sx={{ mt: 2 }} gutterBottom>
+                          Your Answer:
+                        </Typography>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.900' }}>
+                          <Typography variant="body2">
+                            {question.answer}
+                          </Typography>
+                        </Paper>
+                      </>
+                    )}
+                  </Box>
+                </Collapse>
               </Stack>
-            </Box>
-          </Card>
-        ))}
-      </Stack>
+            </Paper>
+          ))}
+        </Stack>
+      </Box>
 
       {/* Practice Dialog */}
-      <Dialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)}
+      <Dialog
+        open={practiceDialogOpen}
+        onClose={() => setPracticeDialogOpen(false)}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>
-          {selectedQuestion?.completed ? 'Review Your Answer' : 'Practice Question'}
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">Practice Answer</Typography>
+            <Tooltip title="Enhance with AI">
+              <span>
+                <IconButton
+                  onClick={handleEnhanceAnswer}
+                  disabled={!answer.trim() || isEnhancing}
+                >
+                  {isEnhancing ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <AutoAwesomeIcon />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <Typography variant="h6">
               {selectedQuestion?.question}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {selectedQuestion?.tips}
-            </Typography>
-          </Box>
-          <TextField
-            label="Your Answer"
-            multiline
-            rows={6}
-            fullWidth
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Type your answer here..."
-          />
+            <TextField
+              multiline
+              rows={8}
+              fullWidth
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Type your answer here..."
+              variant="outlined"
+              disabled={isEnhancing}
+            />
+          </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="inherit">
+          <Button 
+            onClick={() => setPracticeDialogOpen(false)}
+            disabled={isEnhancing}
+          >
             Cancel
           </Button>
           <Button 
-            onClick={handleSaveAnswer} 
-            variant="contained"
-            disabled={!answer.trim()}
+            variant="contained" 
+            onClick={handleSaveAnswer}
+            startIcon={<SaveIcon />}
+            disabled={!answer.trim() || isEnhancing}
           >
             Save Answer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Build Dialog */}
-      <Dialog
-        open={buildDialogOpen}
-        onClose={() => setBuildDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
+      {/* Question Menu */}
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
       >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">Build Your Response</Typography>
-            <IconButton onClick={() => setBuildDialogOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              {selectedQuestion?.question}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {selectedQuestion?.tips}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            {/* Left side - STAR Method Steps */}
-            <Box sx={{ width: '50%' }}>
-              <Typography variant="subtitle1" gutterBottom>
-                STAR Method Builder
-              </Typography>
-              <Stepper activeStep={activeStep} orientation="vertical">
-                <Step>
-                  <StepLabel>Situation</StepLabel>
-                  <StepContent>{getStepContent(0)}</StepContent>
-                </Step>
-                <Step>
-                  <StepLabel>Task</StepLabel>
-                  <StepContent>{getStepContent(1)}</StepContent>
-                </Step>
-                <Step>
-                  <StepLabel>Action</StepLabel>
-                  <StepContent>{getStepContent(2)}</StepContent>
-                </Step>
-                <Step>
-                  <StepLabel>Result</StepLabel>
-                  <StepContent>{getStepContent(3)}</StepContent>
-                </Step>
-                <Step>
-                  <StepLabel>Additional Notes</StepLabel>
-                  <StepContent>{getStepContent(4)}</StepContent>
-                </Step>
-              </Stepper>
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={() => handleBuildStepChange(activeStep - 1)}
-                  sx={{ mr: 1 }}
-                >
-                  Back
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => handleBuildStepChange(activeStep + 1)}
-                  disabled={activeStep === 4}
-                >
-                  Next
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Right side - Preview */}
-            <Divider orientation="vertical" flexItem />
-            <Box sx={{ width: '50%' }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Preview
-              </Typography>
-              <Tabs
-                value={previewTab}
-                onChange={(_e, v) => setPreviewTab(v)}
-                sx={{ mb: 2 }}
-              >
-                <Tab label="Structured" />
-                <Tab label="Continuous" />
-              </Tabs>
-              <Paper 
-                variant="outlined" 
-                sx={{ 
-                  p: 2, 
-                  height: 400, 
-                  overflow: 'auto',
-                  bgcolor: alpha(theme.palette.background.paper, 0.5)
-                }}
-              >
-                {getPreviewContent()}
-              </Paper>
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            startIcon={<DownloadIcon />}
-            onClick={handleDownload}
-            disabled={!Object.values(buildResponse).some(Boolean)}
-          >
-            Download
-          </Button>
-          <Button onClick={() => setBuildDialogOpen(false)} color="inherit">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleBuildSave}
-            variant="contained"
-            startIcon={<SaveIcon />}
-            disabled={!Object.values(buildResponse).some(Boolean)}
-          >
-            Save Response
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <MenuItem onClick={handleViewHistory}>
+          <ListItemIcon>
+            <HistoryIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="View History" />
+        </MenuItem>
+        <MenuItem 
+          onClick={handleDeleteAnswer}
+          disabled={!selectedQuestion?.answer}
+        >
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Delete Answer" />
+        </MenuItem>
+      </Menu>
     </Container>
   );
 };
