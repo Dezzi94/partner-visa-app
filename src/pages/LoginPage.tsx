@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Paper,
   TextField,
   Button,
   Typography,
@@ -11,6 +10,7 @@ import {
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
+import { Favorite as HeartIcon } from '@mui/icons-material';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -38,31 +38,52 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.default'
+      }}
+    >
+      <Container 
+        maxWidth="xs" 
+        sx={{ 
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4
         }}
       >
-        <Paper
-          elevation={2}
+        <Box
           sx={{
-            p: 4,
-            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff',
+            borderRadius: 2,
+            boxShadow: 1,
+            p: 4,
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Sign in
+          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <HeartIcon sx={{ color: '#1976d2', fontSize: 32 }} />
+            <Typography component="h1" variant="h5" sx={{ fontWeight: 500 }}>
+              Partner Visa Guide
+            </Typography>
+          </Box>
+
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 400 }}>
+            Sign in to your account
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            sx={{ width: '100%' }}
+          >
             <TextField
-              margin="normal"
               required
               fullWidth
               id="email"
@@ -72,9 +93,9 @@ const LoginPage: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              sx={{ mb: 2 }}
             />
             <TextField
-              margin="normal"
               required
               fullWidth
               name="password"
@@ -84,32 +105,60 @@ const LoginPage: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              sx={{ mb: 3 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              size="large"
+              sx={{ 
+                height: 48,
+                textTransform: 'none',
+                fontSize: '1rem',
+                mb: 3
+              }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
+
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 2,
+                  color: 'text.secondary',
+                  p: 2,
+                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                  borderRadius: 1
+                }}
+              >
                 Demo Credentials:
                 <br />
                 Email: admin@example.com
                 <br />
                 Password: admin123
               </Typography>
-              <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
+
+              <Link 
+                component={RouterLink} 
+                to="/register" 
+                sx={{
+                  textDecoration: 'none',
+                  color: 'primary.main',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                Don't have an account? Sign up
               </Link>
             </Box>
           </Box>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
