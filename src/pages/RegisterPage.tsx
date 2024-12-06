@@ -26,26 +26,37 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+    console.log('Starting registration process...');
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    
     try {
-      setLoading(true);
+      // Validation
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      if (!email || !email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
+      
+      console.log('Validation passed, attempting to register...');
       await register(email, password);
-      showToast('Registration successful', 'success');
-      navigate('/');
+      
+      console.log('Registration successful, redirecting...');
+      showToast('Account created successfully!', 'success');
+      navigate('/register-success');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register';
+      console.error('Registration error:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message
+        : 'Failed to create account. Please try again.';
+      
       setError(errorMessage);
-      showToast('Failed to register', 'error');
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,10 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFirestore } from 'firebase/firestore';
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCwYnzJsdm17M84vQxV8UYsORnPc7Aq2hM",
   authDomain: "partner-visa-app.firebaseapp.com",
@@ -15,8 +16,17 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let app: FirebaseApp;
+try {
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  throw error;
+}
+
+// Initialize services
+const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
