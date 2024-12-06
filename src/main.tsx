@@ -1,10 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { CssBaseline } from '@mui/material';
+import App from './App';
+import './index.css';
+import '@/config/firebase'; // Import Firebase initialization
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <CssBaseline />
     <App />
-  </StrictMode>,
-)
+  </React.StrictMode>
+);
