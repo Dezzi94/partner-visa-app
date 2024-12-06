@@ -26,9 +26,16 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (loading) return;
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
 
-    // Validation
+    // Reset error state
+    setError('');
+
+    // Validation checks before setting loading state
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       showToast('Passwords do not match', 'error');
@@ -47,15 +54,24 @@ const RegisterPage = () => {
       return;
     }
 
-    setError('');
+    // Start loading
     setLoading(true);
 
     try {
+      // Attempt registration
       await register(email, password);
+      
+      // Only show success message and navigate if registration was successful
       showToast('Account created successfully!', 'success');
-      navigate('/register-success');
+      
+      // Ensure loading is set to false before navigation
+      setLoading(false);
+      
+      // Navigate to success page
+      navigate('/register-success', { replace: true });
     } catch (error) {
       console.error('Registration error:', error);
+      
       if (error instanceof Error) {
         setError(error.message);
         showToast(error.message, 'error');
@@ -64,9 +80,10 @@ const RegisterPage = () => {
         setError(errorMessage);
         showToast(errorMessage, 'error');
       }
+      
+      // Ensure loading is set to false on error
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -120,6 +137,7 @@ const RegisterPage = () => {
             component="form" 
             onSubmit={handleSubmit} 
             sx={{ width: '100%' }}
+            noValidate
           >
             <TextField
               required

@@ -6,8 +6,8 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { ref, set } from 'firebase/database';
+import { auth, database } from '../config/firebase';
 
 interface User {
   email: string | null;
@@ -24,7 +24,6 @@ interface AuthContextType {
   loading: boolean;
 }
 
-// Create a dummy context with no-op functions
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
@@ -72,6 +71,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
+  const register = async (email: string, password: string): Promise<void> => {
+    try {
+      // Create the user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      // Create user data in Realtime Database
+      const userData = {
+        email: firebaseUser.email,
+        createdAt: new Date().toISOString(),
+        documents: [],
+        progress: {
+          documents: { required: 0, optional: 0 },
+          forms: { completed: 0, total: 0 },
+          timeline: { milestones: 0, recommended: 0 },
+          interview: { completed: 0, total: 0 }
+        }
+      };
+
+      // Set user data in Realtime Database
+      await set(ref(database, `users/${firebaseUser.uid}`), userData);
+
+      // Update local state
+      setUser({
+        email: firebaseUser.email,
+        uid: firebaseUser.uid
+      });
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
   const login = async (email: string, password: string): Promise<void> => {
     try {
       // Check for demo account
@@ -88,34 +121,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Regular Firebase authentication
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
 
-        // Set the user state after successful authentication
-        setUser({
-          email: firebaseUser.email,
-          uid: firebaseUser.uid
-        });
-        setIsAuthenticated(true);
-      } catch (firebaseError: any) {
-        // Handle Firebase Auth specific error codes
-        switch (firebaseError.code) {
-          case 'auth/user-not-found':
-            throw new Error('No account exists with this email. Please register first.');
-          case 'auth/wrong-password':
-            throw new Error('Incorrect password. Please try again.');
-          case 'auth/invalid-email':
-            throw new Error('Please enter a valid email address.');
-          case 'auth/too-many-requests':
-            throw new Error('Too many failed attempts. Please try again later.');
-          case 'auth/user-disabled':
-            throw new Error('This account has been disabled. Please contact support.');
-          default:
-            console.error('Firebase Auth Error:', firebaseError);
-            throw new Error('Login failed. Please try again.');
-        }
-      }
+      setUser({
+        email: firebaseUser.email,
+        uid: firebaseUser.uid
+      });
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -124,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Check if it's a demo user
       if (user?.isDemo) {
         localStorage.removeItem('demoUser');
         setUser(null);
@@ -132,7 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Regular Firebase logout
       await signOut(auth);
       setUser(null);
       setIsAuthenticated(false);
@@ -142,56 +153,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string): Promise<void> => {
-    try {
-      // Create the user in Firebase Auth first
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-
-      try {
-        // Create initial user document in Firestore
-        const userDoc = {
-          email: firebaseUser.email,
-          createdAt: new Date().toISOString(),
-          documents: [],
-          progress: {
-            documents: { required: 0, optional: 0 },
-            forms: { completed: 0, total: 0 },
-            timeline: { milestones: 0, recommended: 0 },
-            interview: { completed: 0, total: 0 }
-          }
-        };
-
-        // Try to create the Firestore document
-        await setDoc(doc(db, 'users', firebaseUser.uid), userDoc);
-      } catch (firestoreError) {
-        console.error('Error creating Firestore document:', firestoreError);
-        // Continue even if Firestore fails - we can create the document later
-      }
-
-      // Update local state
-      setUser({
-        email: firebaseUser.email,
-        uid: firebaseUser.uid
-      });
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
-  };
-
-  const value = {
-    user,
-    isAuthenticated,
-    login,
-    logout,
-    register,
-    loading
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        login,
+        logout,
+        register,
+        loading
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
