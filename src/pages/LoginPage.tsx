@@ -32,33 +32,45 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (loading) return;
     
+    setError('');
+    setLoading(true);
+    
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      setLoading(false);
+      return;
+    }
+
     try {
-      setLoading(true);
       await login(email, password);
       showToast('Login successful', 'success');
       navigate(from, { replace: true });
     } catch (error) {
+      console.error('Login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to login';
       setError(errorMessage);
-      showToast('Failed to login', 'error');
-    } finally {
+      showToast(errorMessage, 'error');
       setLoading(false);
     }
   };
 
   const handleDemoLogin = async () => {
+    if (loading) return;
+    
+    setError('');
+    setLoading(true);
+    
     try {
-      setLoading(true);
       await login(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
       showToast('Demo login successful', 'success');
       navigate(from, { replace: true });
     } catch (error) {
+      console.error('Demo login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to login';
       setError(errorMessage);
-      showToast('Failed to login', 'error');
-    } finally {
+      showToast(errorMessage, 'error');
       setLoading(false);
     }
   };

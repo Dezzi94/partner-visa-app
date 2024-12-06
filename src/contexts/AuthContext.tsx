@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       // Check for demo account
       if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
@@ -88,12 +88,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Regular Firebase authentication
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      setUser({
-        email: result.user.email,
-        uid: result.user.uid
-      });
-      setIsAuthenticated(true);
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+
+        // Set the user state after successful authentication
+        setUser({
+          email: firebaseUser.email,
+          uid: firebaseUser.uid
+        });
+        setIsAuthenticated(true);
+      } catch (firebaseError: any) {
+        // Handle Firebase Auth specific error codes
+        switch (firebaseError.code) {
+          case 'auth/user-not-found':
+            throw new Error('No account exists with this email. Please register first.');
+          case 'auth/wrong-password':
+            throw new Error('Incorrect password. Please try again.');
+          case 'auth/invalid-email':
+            throw new Error('Please enter a valid email address.');
+          case 'auth/too-many-requests':
+            throw new Error('Too many failed attempts. Please try again later.');
+          case 'auth/user-disabled':
+            throw new Error('This account has been disabled. Please contact support.');
+          default:
+            console.error('Firebase Auth Error:', firebaseError);
+            throw new Error('Login failed. Please try again.');
+        }
+      }
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -120,27 +142,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string): Promise<void> => {
     try {
-      // Create the user in Firebase Auth
+      // Create the user in Firebase Auth first
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
-      // Create initial user document in Firestore
-      const userDoc = {
-        email: firebaseUser.email,
-        createdAt: new Date().toISOString(),
-        documents: [],
-        progress: {
-          documents: { required: 0, optional: 0 },
-          forms: { completed: 0, total: 0 },
-          timeline: { milestones: 0, recommended: 0 },
-          interview: { completed: 0, total: 0 }
-        }
-      };
+      try {
+        // Create initial user document in Firestore
+        const userDoc = {
+          email: firebaseUser.email,
+          createdAt: new Date().toISOString(),
+          documents: [],
+          progress: {
+            documents: { required: 0, optional: 0 },
+            forms: { completed: 0, total: 0 },
+            timeline: { milestones: 0, recommended: 0 },
+            interview: { completed: 0, total: 0 }
+          }
+        };
 
-      // Set the user document in Firestore
-      await setDoc(doc(db, 'users', firebaseUser.uid), userDoc);
+        // Try to create the Firestore document
+        await setDoc(doc(db, 'users', firebaseUser.uid), userDoc);
+      } catch (firestoreError) {
+        console.error('Error creating Firestore document:', firestoreError);
+        // Continue even if Firestore fails - we can create the document later
+      }
 
       // Update local state
       setUser({

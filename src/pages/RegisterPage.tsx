@@ -7,6 +7,7 @@ import {
   Link,
   Container,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,32 +26,52 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    console.log('Starting registration process...');
+    if (loading) return;
 
+    // Reset states
+    setError('');
+    setLoading(true);
+
+    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
+      setLoading(false);
       return;
     }
-    
+
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+
     try {
-      setLoading(true);
-      console.log('Attempting to register with:', { email });
       await register(email, password);
-      console.log('Registration successful!');
-      showToast('Registration successful', 'success');
+      setLoading(false); // Set loading to false before navigation
       navigate('/register-success');
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register';
+      let errorMessage = 'Failed to create account. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('email-already-in-use')) {
+          errorMessage = 'This email is already registered. Please try logging in instead.';
+        } else if (error.message.includes('invalid-email')) {
+          errorMessage = 'Please enter a valid email address.';
+        } else if (error.message.includes('weak-password')) {
+          errorMessage = 'Password is too weak. Please use at least 6 characters.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setError(errorMessage);
-      showToast('Failed to register', 'error');
-    } finally {
       setLoading(false);
     }
   };
@@ -117,6 +138,7 @@ const RegisterPage: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -129,6 +151,7 @@ const RegisterPage: React.FC = () => {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -141,6 +164,7 @@ const RegisterPage: React.FC = () => {
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
               sx={{ mb: 3 }}
             />
             <Button
@@ -148,15 +172,26 @@ const RegisterPage: React.FC = () => {
               fullWidth
               variant="contained"
               size="large"
+              disabled={loading || !email || !password || !confirmPassword}
               sx={{ 
                 height: 48,
                 textTransform: 'none',
                 fontSize: '1rem',
-                mb: 3
+                mb: 3,
+                position: 'relative'
               }}
-              disabled={loading || !email || !password || !confirmPassword}
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  Creating account...
+                  <CircularProgress
+                    size={20}
+                    sx={{ ml: 2 }}
+                  />
+                </Box>
+              ) : (
+                'Create account'
+              )}
             </Button>
 
             <Box sx={{ textAlign: 'center' }}>

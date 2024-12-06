@@ -1,18 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 
 const RegisterSuccessPage: React.FC = () => {
   const navigate = useNavigate();
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    // Redirect to login page after 3 seconds
-    const timer = setTimeout(() => {
-      navigate('/login');
-    }, 3000);
+    // Only start countdown if we're actually on this page
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Use replace to prevent back navigation
+          navigate('/login', { replace: true });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearTimeout(timer);
+    // Cleanup timer on unmount
+    return () => clearInterval(timer);
   }, [navigate]);
 
   return (
@@ -58,7 +68,7 @@ const RegisterSuccessPage: React.FC = () => {
             Account Created Successfully!
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Redirecting you to login...
+            Redirecting to login in {countdown} seconds...
           </Typography>
           <CircularProgress size={24} />
         </Box>
