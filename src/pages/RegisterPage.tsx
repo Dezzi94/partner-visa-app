@@ -14,7 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { Favorite as HeartIcon } from '@mui/icons-material';
 
-const RegisterPage: React.FC = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,56 +24,49 @@ const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
-
-    // Reset states
-    setError('');
-    setLoading(true);
 
     // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      setLoading(false);
+      showToast('Passwords do not match', 'error');
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
-      setLoading(false);
+      showToast('Password must be at least 6 characters', 'error');
       return;
     }
 
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address');
-      setLoading(false);
+      showToast('Please enter a valid email address', 'error');
       return;
     }
 
+    setError('');
+    setLoading(true);
+
     try {
       await register(email, password);
-      setLoading(false); // Set loading to false before navigation
+      showToast('Account created successfully!', 'success');
       navigate('/register-success');
     } catch (error) {
       console.error('Registration error:', error);
-      let errorMessage = 'Failed to create account. Please try again.';
-      
       if (error instanceof Error) {
-        if (error.message.includes('email-already-in-use')) {
-          errorMessage = 'This email is already registered. Please try logging in instead.';
-        } else if (error.message.includes('invalid-email')) {
-          errorMessage = 'Please enter a valid email address.';
-        } else if (error.message.includes('weak-password')) {
-          errorMessage = 'Password is too weak. Please use at least 6 characters.';
-        } else {
-          errorMessage = error.message;
-        }
+        setError(error.message);
+        showToast(error.message, 'error');
+      } else {
+        const errorMessage = 'Failed to create account. Please try again.';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
       }
-      
-      setError(errorMessage);
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -177,17 +170,13 @@ const RegisterPage: React.FC = () => {
                 height: 48,
                 textTransform: 'none',
                 fontSize: '1rem',
-                mb: 3,
-                position: 'relative'
+                mb: 3
               }}
             >
               {loading ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   Creating account...
-                  <CircularProgress
-                    size={20}
-                    sx={{ ml: 2 }}
-                  />
+                  <CircularProgress size={20} />
                 </Box>
               ) : (
                 'Create account'
