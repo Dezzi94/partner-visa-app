@@ -16,6 +16,7 @@ import SummaryPage from './pages/SummaryPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import RegisterSuccessPage from './pages/RegisterSuccessPage';
+import ProfilePage from './pages/ProfilePage';
 import ErrorBoundary from './components/ErrorBoundary';
 import { app } from './config/firebase';
 
@@ -43,6 +44,7 @@ const App = () => {
                       <Route path="/interview-prep" element={<InterviewPrepPage />} />
                       <Route path="/resources" element={<ResourcesPage />} />
                       <Route path="/summary" element={<SummaryPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
                     </Route>
                   </Routes>
                 </BrowserRouter>

@@ -76,6 +76,11 @@ const Navbar: React.FC<NavbarProps> = ({ drawerWidth }) => {
     navigate('/login');
   };
 
+  const handleProfileClick = () => {
+    handleMenuClose();
+    navigate('/profile');
+  };
+
   return (
     <>
       <AppBar
@@ -151,6 +156,12 @@ const Navbar: React.FC<NavbarProps> = ({ drawerWidth }) => {
                 <ListItemText primary={user.email || 'User'} />
               </MenuItem>
             )}
+            <MenuItem onClick={handleProfileClick}>
+              <ListItemIcon>
+                <AccountCircleIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Profile" />
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />

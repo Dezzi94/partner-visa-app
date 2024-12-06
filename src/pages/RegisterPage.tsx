@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   TextField,
@@ -24,7 +24,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // Prevent multiple submissions
@@ -35,10 +35,10 @@ const RegisterPage = () => {
     // Reset error state
     setError('');
 
-    // Validation checks before setting loading state
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      showToast('Passwords do not match', 'error');
+    // Validation checks
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      showToast('Please enter a valid email address', 'error');
       return;
     }
 
@@ -48,43 +48,26 @@ const RegisterPage = () => {
       return;
     }
 
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address');
-      showToast('Please enter a valid email address', 'error');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      showToast('Passwords do not match', 'error');
       return;
     }
 
-    // Start loading
     setLoading(true);
 
     try {
-      // Attempt registration
       await register(email, password);
-      
-      // Only show success message and navigate if registration was successful
       showToast('Account created successfully!', 'success');
-      
-      // Ensure loading is set to false before navigation
-      setLoading(false);
-      
-      // Navigate to success page
       navigate('/register-success', { replace: true });
     } catch (error) {
-      console.error('Registration error:', error);
-      
-      if (error instanceof Error) {
-        setError(error.message);
-        showToast(error.message, 'error');
-      } else {
-        const errorMessage = 'Failed to create account. Please try again.';
-        setError(errorMessage);
-        showToast(errorMessage, 'error');
-      }
-      
-      // Ensure loading is set to false on error
+      const message = error instanceof Error ? error.message : 'Failed to create account';
+      setError(message);
+      showToast(message, 'error');
+    } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, confirmPassword, loading, register, navigate, showToast]);
 
   return (
     <Box
@@ -150,6 +133,7 @@ const RegisterPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
+              error={!!error && error.includes('email')}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -163,6 +147,7 @@ const RegisterPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              error={!!error && error.includes('password')}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -176,6 +161,7 @@ const RegisterPage = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
+              error={!!error && error.includes('match')}
               sx={{ mb: 3 }}
             />
             <Button
@@ -188,7 +174,8 @@ const RegisterPage = () => {
                 height: 48,
                 textTransform: 'none',
                 fontSize: '1rem',
-                mb: 3
+                mb: 3,
+                position: 'relative'
               }}
             >
               {loading ? (

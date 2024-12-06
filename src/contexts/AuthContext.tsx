@@ -4,10 +4,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User as FirebaseUser
+  User as FirebaseUser,
+  AuthError
 } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { ref, set } from 'firebase/database';
-import { auth, database } from '../config/firebase';
+import { auth, db, database } from '../config/firebase';
 
 interface User {
   email: string | null;
@@ -54,7 +56,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         setIsAuthenticated(true);
       } else {
-        // Check for demo user in localStorage
         const demoUser = localStorage.getItem('demoUser');
         if (demoUser) {
           const userData = JSON.parse(demoUser);
@@ -68,16 +69,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   const register = async (email: string, password: string): Promise<void> => {
     try {
-      // Create the user in Firebase Auth
+      // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
-      // Create user data in Realtime Database
+      // Initial user data
       const userData = {
         email: firebaseUser.email,
         createdAt: new Date().toISOString(),
@@ -90,7 +91,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       };
 
-      // Set user data in Realtime Database
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+
+      // Create user data in Realtime Database
       await set(ref(database, `users/${firebaseUser.uid}`), userData);
 
       // Update local state
@@ -101,13 +105,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Registration error:', error);
-      throw error;
+      const authError = error as AuthError;
+      switch (authError.code) {
+        case 'auth/email-already-in-use':
+          throw new Error('This email is already registered. Please try logging in instead.');
+        case 'auth/invalid-email':
+          throw new Error('Please enter a valid email address.');
+        case 'auth/operation-not-allowed':
+          throw new Error('Email/password accounts are not enabled. Please contact support.');
+        case 'auth/weak-password':
+          throw new Error('Password is too weak. Please use at least 6 characters.');
+        default:
+          throw new Error('Failed to create account. Please try again.');
+      }
     }
   };
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      // Check for demo account
       if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
         const demoUser = {
           email: DEMO_CREDENTIALS.email,
@@ -120,10 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Regular Firebase authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
-
       setUser({
         email: firebaseUser.email,
         uid: firebaseUser.uid
@@ -131,7 +144,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      const authError = error as AuthError;
+      switch (authError.code) {
+        case 'auth/user-not-found':
+          throw new Error('No account exists with this email. Please register first.');
+        case 'auth/wrong-password':
+          throw new Error('Incorrect password. Please try again.');
+        case 'auth/too-many-requests':
+          throw new Error('Too many failed attempts. Please try again later.');
+        default:
+          throw new Error('Failed to login. Please try again.');
+      }
     }
   };
 
