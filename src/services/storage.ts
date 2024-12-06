@@ -1,6 +1,6 @@
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { ref as databaseRef, update, get, child } from 'firebase/database';
+import { ref as databaseRef, update, get, } from 'firebase/database';
 import { storage, db, database } from '../config/firebase';
 
 interface UploadedDocument {
