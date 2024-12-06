@@ -38,7 +38,7 @@ const Layout = () => {
             px: { xs: 2, sm: 3 },
             py: { xs: 3, sm: 4 },
             '& > *:first-of-type': {
-              mt: { xs: 1, sm: 2 }
+              mt: 0
             },
             '& .MuiTypography-h4': {
               fontSize: { xs: '1.75rem', sm: '2rem' },

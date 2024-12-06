@@ -285,7 +285,7 @@ const InterviewPrepPage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <PageHeader
         title="Interview Preparation"
         subtitle="Practice answering common partner visa interview questions"
@@ -508,7 +508,7 @@ const InterviewPrepPage: React.FC = () => {
           <ListItemText primary="Delete Answer" />
         </MenuItem>
       </Menu>
-    </Box>
+    </Container>
   );
 };
 

@@ -124,10 +124,6 @@ const FormsPage: React.FC = () => {
       <PageHeader
         title="Visa Application Forms"
         subtitle="Complete all required forms for your partner visa application"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Forms' },
-        ]}
       />
 
       <Grid container spacing={2}>

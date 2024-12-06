@@ -65,10 +65,6 @@ const SummaryPage: React.FC = () => {
       <PageHeader
         title="Application Summary"
         subtitle="Track your progress and next steps"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Summary' },
-        ]}
       />
 
       <Grid container spacing={2}>
