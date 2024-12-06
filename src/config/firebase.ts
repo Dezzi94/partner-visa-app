@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCwYnzJsdm17M84vQxV8UYsORnPc7Aq2hM",
   authDomain: "partner-visa-app.firebaseapp.com",
   projectId: "partner-visa-app",
-  storageBucket: "partner-visa-app.firebasestorage.app",
+  storageBucket: "partner-visa-app.appspot.com",
   messagingSenderId: "929854927553",
   appId: "1:929854927553:web:f160253cd6afea0dc49a40",
   measurementId: "G-1W3CS92M86"

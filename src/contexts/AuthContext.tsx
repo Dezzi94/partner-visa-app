@@ -20,16 +20,17 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string) => Promise<FirebaseUser>;
+  register: (email: string, password: string) => Promise<void>;
   loading: boolean;
 }
 
+// Create a dummy context with no-op functions
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
   login: async () => {},
   logout: async () => {},
-  register: async () => { throw new Error('Not implemented') },
+  register: async () => {},
   loading: true
 });
 
@@ -87,7 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Regular Firebase authentication
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      setUser({
+        email: result.user.email,
+        uid: result.user.uid
+      });
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -106,6 +112,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Regular Firebase logout
       await signOut(auth);
+      setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -114,14 +122,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (email: string, password: string) => {
     try {
-      console.log('Starting registration in AuthContext...');
+      // Create the user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const { user: firebaseUser } = userCredential;
-      
-      console.log('User created in Firebase Auth, creating Firestore document...');
-      
-      // Create a user document in Firestore
-      await setDoc(doc(db, 'users', firebaseUser.uid), {
+      const firebaseUser = userCredential.user;
+
+      // Create initial user document in Firestore
+      const userDoc = {
         email: firebaseUser.email,
         createdAt: new Date().toISOString(),
         documents: [],
@@ -131,35 +137,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           timeline: { milestones: 0, recommended: 0 },
           interview: { completed: 0, total: 0 }
         }
-      });
-      
-      console.log('Firestore document created successfully');
-      
-      // Set the user state immediately after successful registration
+      };
+
+      // Set the user document in Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), userDoc);
+
+      // Update local state
       setUser({
         email: firebaseUser.email,
         uid: firebaseUser.uid
       });
       setIsAuthenticated(true);
-      
-      return firebaseUser;
     } catch (error) {
-      console.error('Registration error in AuthContext:', error);
+      console.error('Registration error:', error);
       throw error;
     }
   };
 
+  const value = {
+    user,
+    isAuthenticated,
+    login,
+    logout,
+    register,
+    loading
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        login,
-        logout,
-        register,
-        loading
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );
