@@ -162,20 +162,10 @@ const TimelinePage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      minHeight: '100vh',
-      width: '100%',
-      pb: 4
-    }}>
+    <Box>
       <PageHeader
         title="Relationship Timeline"
         subtitle="Document important milestones in your relationship for your partner visa application"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Timeline' },
-        ]}
       />
 
       <ContentCard

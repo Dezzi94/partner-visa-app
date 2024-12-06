@@ -6,16 +6,23 @@ import {
   Typography,
   Link,
   Container,
+  Alert,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { Favorite as HeartIcon } from '@mui/icons-material';
+
+const DEMO_CREDENTIALS = {
+  email: 'demo@example.com',
+  password: 'demo123'
+};
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,12 +32,31 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     try {
       setLoading(true);
       await login(email, password);
       showToast('Login successful', 'success');
       navigate(from, { replace: true });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to login';
+      setError(errorMessage);
+      showToast('Failed to login', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      setLoading(true);
+      await login(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+      showToast('Demo login successful', 'success');
+      navigate(from, { replace: true });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to login';
+      setError(errorMessage);
       showToast('Failed to login', 'error');
     } finally {
       setLoading(false);
@@ -78,6 +104,12 @@ const LoginPage: React.FC = () => {
             Sign in to your account
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
+              {error}
+            </Alert>
+          )}
+
           <Box 
             component="form" 
             onSubmit={handleSubmit} 
@@ -116,31 +148,30 @@ const LoginPage: React.FC = () => {
                 height: 48,
                 textTransform: 'none',
                 fontSize: '1rem',
-                mb: 3
+                mb: 2
               }}
-              disabled={loading}
+              disabled={loading || !email || !password}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
 
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mb: 2,
-                  color: 'text.secondary',
-                  p: 2,
-                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-                  borderRadius: 1
-                }}
-              >
-                Demo Credentials:
-                <br />
-                Email: admin@example.com
-                <br />
-                Password: admin123
-              </Typography>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="large"
+              onClick={handleDemoLogin}
+              sx={{ 
+                height: 48,
+                textTransform: 'none',
+                fontSize: '1rem',
+                mb: 3
+              }}
+              disabled={loading}
+            >
+              Try Demo Account
+            </Button>
 
+            <Box sx={{ textAlign: 'center' }}>
               <Link 
                 component={RouterLink} 
                 to="/register" 

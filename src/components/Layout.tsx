@@ -35,24 +35,23 @@ const Layout = () => {
             maxWidth: '1200px',
             width: '100%',
             mx: 'auto',
-            px: { xs: 1, sm: 2 },
-            '& .MuiBreadcrumbs-root': {
-              mt: 1,
-              mb: 1,
+            px: { xs: 2, sm: 3 },
+            py: { xs: 3, sm: 4 },
+            '& > *:first-of-type': {
+              mt: { xs: 1, sm: 2 }
             },
-            '& .MuiTypography-h1': {
-              mt: 1,
-              mb: 0.5,
-              fontSize: '2rem',
+            '& .MuiTypography-h4': {
+              fontSize: { xs: '1.75rem', sm: '2rem' },
               fontWeight: 500,
+              mb: 1
             },
             '& .MuiTypography-subtitle1': {
-              mb: 1.5,
               color: 'text.secondary',
+              mb: 3
             },
             '& .MuiCard-root': {
-              p: { xs: 1, sm: 1.5 },
-              mb: 1.5,
+              p: { xs: 2, sm: 3 },
+              mb: 2,
               '&:last-child': {
                 mb: 0,
               },
@@ -60,21 +59,21 @@ const Layout = () => {
             '& .progress-section': {
               display: 'flex',
               flexWrap: 'wrap',
-              gap: 1,
-              mb: 2,
+              gap: 2,
+              mb: 3,
               '& > *': {
                 flex: '1 1 auto',
                 minWidth: { 
                   xs: '100%',
-                  sm: 'calc(50% - 4px)',
-                  md: 'calc(25% - 6px)',
+                  sm: 'calc(50% - 8px)',
+                  md: 'calc(25% - 12px)',
                 },
               },
             },
             '& .MuiGrid-container': {
               mt: 0,
               '& .MuiGrid-item': {
-                pb: 1,
+                pb: 2,
               },
             },
           }}

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import { ProgressProvider } from './contexts/ProgressContext';
 import Layout from './components/Layout';
@@ -14,28 +14,44 @@ import TimelinePage from './pages/TimelinePage';
 import InterviewPrepPage from './pages/InterviewPrepPage';
 import ResourcesPage from './pages/ResourcesPage';
 import SummaryPage from './pages/SummaryPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import { disconnectPort, isChromeExtension } from './utils/helpers';
 import type { ChromePort } from './types/chrome';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return null; // Or a loading spinner
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
   useEffect(() => {
     let messagePorts: ChromePort[] = [];
 
-    // Handle page show event for bfcache
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        // Page was restored from bfcache, reconnect message ports
         messagePorts.forEach(disconnectPort);
         messagePorts = [];
         window.__messagePorts = messagePorts;
-
-        // Reload the page to ensure clean state
         window.location.reload();
       }
     };
 
-    // Handle before unload to clean up message ports
     const handleBeforeUnload = () => {
       if (isChromeExtension()) {
         messagePorts.forEach(disconnectPort);
@@ -44,12 +60,8 @@ function App() {
       }
     };
 
-    // Initialize message port tracking
     if (isChromeExtension() && window.chrome?.runtime) {
-      // Create a new port for this session
       const port = window.chrome.runtime.connect({ name: 'partner-visa-app' });
-      
-      // Add disconnect listener
       port.onDisconnect.addListener(() => {
         const index = messagePorts.indexOf(port);
         if (index > -1) {
@@ -57,8 +69,6 @@ function App() {
           window.__messagePorts = messagePorts;
         }
       });
-
-      // Store the port
       messagePorts.push(port);
       window.__messagePorts = messagePorts;
     }
@@ -80,11 +90,17 @@ function App() {
           <AuthProvider>
             <ProgressProvider>
               <ToastProvider>
-                <BrowserRouter future={{ 
-                  v7_startTransition: false  // Opt-out of new behavior until v7 is stable
-                }}>
+                <BrowserRouter>
                   <Routes>
-                    <Route element={<Layout />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route
+                      element={
+                        <ProtectedRoute>
+                          <Layout />
+                        </ProtectedRoute>
+                      }
+                    >
                       <Route index element={<HomePage />} />
                       <Route path="documents" element={<DocumentsPage />} />
                       <Route path="forms" element={<FormsPage />} />

@@ -1,40 +1,50 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Paper,
   TextField,
   Button,
   Typography,
   Link,
   Container,
+  Alert,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/common/Toast';
+import { Favorite as HeartIcon } from '@mui/icons-material';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
     if (password !== confirmPassword) {
-      showToast('Passwords do not match', 'error');
+      setError('Passwords do not match');
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
     try {
       setLoading(true);
       await register(email, password);
       showToast('Registration successful', 'success');
       navigate('/');
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to register';
+      setError(errorMessage);
       showToast('Failed to register', 'error');
     } finally {
       setLoading(false);
@@ -42,31 +52,58 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.default'
+      }}
+    >
+      <Container 
+        maxWidth="xs" 
+        sx={{ 
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4
         }}
       >
-        <Paper
-          elevation={2}
+        <Box
           sx={{
-            p: 4,
-            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff',
+            borderRadius: 2,
+            boxShadow: 1,
+            p: 4,
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Sign up
+          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <HeartIcon sx={{ color: '#1976d2', fontSize: 32 }} />
+            <Typography component="h1" variant="h5" sx={{ fontWeight: 500 }}>
+              Partner Visa Guide
+            </Typography>
+          </Box>
+
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 400 }}>
+            Create your account
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
+              {error}
+            </Alert>
+          )}
+
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            sx={{ width: '100%' }}
+          >
             <TextField
-              margin="normal"
               required
               fullWidth
               id="email"
@@ -76,9 +113,9 @@ const RegisterPage: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              sx={{ mb: 2 }}
             />
             <TextField
-              margin="normal"
               required
               fullWidth
               name="password"
@@ -88,9 +125,9 @@ const RegisterPage: React.FC = () => {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              sx={{ mb: 2 }}
             />
             <TextField
-              margin="normal"
               required
               fullWidth
               name="confirmPassword"
@@ -100,25 +137,43 @@ const RegisterPage: React.FC = () => {
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ mb: 3 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+              size="large"
+              sx={{ 
+                height: 48,
+                textTransform: 'none',
+                fontSize: '1rem',
+                mb: 3
+              }}
+              disabled={loading || !email || !password || !confirmPassword}
             >
-              {loading ? 'Signing up...' : 'Sign Up'}
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
+
             <Box sx={{ textAlign: 'center' }}>
-              <Link component={RouterLink} to="/login" variant="body2">
-                {'Already have an account? Sign In'}
+              <Link 
+                component={RouterLink} 
+                to="/login" 
+                sx={{
+                  textDecoration: 'none',
+                  color: 'primary.main',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                Already have an account? Sign in
               </Link>
             </Box>
           </Box>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

@@ -75,10 +75,6 @@ const ResourcesPage: React.FC = () => {
       <PageHeader
         title="Resources"
         subtitle="Helpful information and links for your visa application"
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Resources' },
-        ]}
       />
 
       <Grid container spacing={2}>

@@ -60,10 +60,6 @@ const DocumentsPage: React.FC = () => {
       <PageHeader
         title="Document Checklist"
         subtitle={`${uploadedCount.required + uploadedCount.optional} of ${requiredDocuments.length + optionalDocuments.length} documents uploaded`}
-        breadcrumbs={[
-          { label: 'Home', path: '/' },
-          { label: 'Documents' },
-        ]}
       />
       
       <Grid container spacing={2}>
