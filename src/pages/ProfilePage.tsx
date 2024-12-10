@@ -1,212 +1,190 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
   Typography,
-  Avatar,
-  Button,
   TextField,
+  Button,
+  Avatar,
+  Paper,
+  Container,
+  Grid,
+  IconButton,
   CircularProgress,
   Alert,
-  IconButton,
 } from '@mui/material';
-import { PhotoCamera as PhotoCameraIcon } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../components/common/Toast';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { storage, db } from '../config/firebase';
+import {
+  Edit as EditIcon,
+  PhotoCamera as PhotoCameraIcon,
+} from '@mui/icons-material';
+import { useAuth } from '@/contexts/AuthContext';
+import { User } from '@/types/supabase';
+import { getUserProfile, updateUserProfile, updateProfilePicture } from '@/services/userService';
 
-interface UserProfile {
-  displayName: string;
-  photoURL: string;
-}
-
-const ProfilePage = () => {
-  const { user } = useAuth();
-  const { showToast } = useToast();
+const ProfilePage: React.FC = () => {
+  const { user: authUser } = useAuth();
+  const [profile, setProfile] = useState<User | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [photoURL, setPhotoURL] = useState('');
-  const [uploadLoading, setUploadLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) return;
-
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as UserProfile;
-          setDisplayName(userData.displayName || '');
-          setPhotoURL(userData.photoURL || '');
+    const loadProfile = async () => {
+      if (authUser) {
+        try {
+          setLoading(true);
+          const profileData = await getUserProfile(authUser.uid);
+          setProfile(profileData);
+          setName(profileData?.name || '');
+        } catch (err) {
+          setError('Failed to load profile');
+          console.error('Error loading profile:', err);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        showToast('Failed to load profile', 'error');
       }
     };
 
-    fetchUserProfile();
-  }, [user, showToast]);
+    loadProfile();
+  }, [authUser]);
 
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!user || !event.target.files || !event.target.files[0]) return;
-
-    const file = event.target.files[0];
-    if (!file.type.startsWith('image/')) {
-      showToast('Please upload an image file', 'error');
-      return;
-    }
-
-    setUploadLoading(true);
-    setError('');
+  const handleNameChange = async () => {
+    if (!authUser) return;
 
     try {
-      const storageRef = ref(storage, `profile-photos/${user.uid}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      await updateDoc(doc(db, 'users', user.uid), {
-        photoURL: downloadURL
+      setLoading(true);
+      setError(null);
+      const updatedProfile = await updateUserProfile(authUser.uid, {
+        name: name.trim(),
+        updated_at: new Date().toISOString()
       });
-
-      setPhotoURL(downloadURL);
-      showToast('Profile photo updated successfully', 'success');
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      setError('Failed to upload photo. Please try again.');
-      showToast('Failed to upload photo', 'error');
-    } finally {
-      setUploadLoading(false);
-    }
-  };
-
-  const handleUpdateProfile = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        displayName: displayName.trim()
-      });
-
-      showToast('Profile updated successfully', 'success');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      setError('Failed to update profile. Please try again.');
-      showToast('Failed to update profile', 'error');
+      setProfile(updatedProfile);
+      setEditMode(false);
+    } catch (err) {
+      setError('Failed to update profile');
+      console.error('Error updating profile:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
-    return null;
-  }
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!authUser || !event.target.files?.[0]) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      const file = event.target.files[0];
+      const photoURL = await updateProfilePicture(authUser.uid, file);
+      setProfile((prev: User | null) => prev ? { ...prev, profile_picture: photoURL } : null);
+    } catch (err) {
+      setError('Failed to upload photo');
+      console.error('Error uploading photo:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!authUser) return null;
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: 'background.default',
-        py: 4
-      }}
-    >
-      <Container maxWidth="sm">
-        <Typography variant="h4" component="h1" gutterBottom>
-          Profile Settings
-        </Typography>
-
+    <Container maxWidth="md">
+      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            boxShadow: 1,
-            p: 4,
-            mb: 4
-          }}
-        >
-          <Box sx={{ position: 'relative', mb: 4 }}>
-            <Avatar
-              src={photoURL || undefined}
-              alt={displayName || user.email || ''}
-              sx={{
-                width: 120,
-                height: 120,
-                mb: 2
-              }}
-            />
-            <input
-              accept="image/*"
-              type="file"
-              id="photo-upload"
-              onChange={handlePhotoUpload}
-              style={{ display: 'none' }}
-              disabled={uploadLoading}
-            />
-            <label htmlFor="photo-upload">
-              <IconButton
-                component="span"
-                sx={{
-                  position: 'absolute',
-                  right: -8,
-                  bottom: 16,
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    bgcolor: 'primary.dark',
-                  },
-                }}
-                disabled={uploadLoading}
-              >
-                {uploadLoading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  <PhotoCameraIcon />
-                )}
-              </IconButton>
-            </label>
-          </Box>
-
-          <TextField
-            fullWidth
-            label="Display Name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            disabled={loading}
-            sx={{ mb: 3 }}
-          />
-
-          <Button
-            variant="contained"
-            onClick={handleUpdateProfile}
-            disabled={loading || !displayName.trim()}
-            sx={{ minWidth: 200 }}
-          >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              'Update Profile'
-            )}
-          </Button>
-        </Box>
-      </Container>
-    </Box>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+            <Box position="relative" display="inline-block">
+              <Avatar
+                src={profile?.profile_picture || undefined}
+                alt={profile?.name || authUser.email || ''}
+                sx={{ width: 120, height: 120, mb: 2 }}
+              />
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="photo-upload"
+                type="file"
+                onChange={handlePhotoUpload}
+                disabled={loading}
+              />
+              <label htmlFor="photo-upload">
+                <IconButton
+                  component="span"
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    right: 0,
+                    backgroundColor: 'background.paper',
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <PhotoCameraIcon />
+                  )}
+                </IconButton>
+              </label>
+            </Box>
+            <Typography variant="body2" color="textSecondary">
+              {authUser.email}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Profile Information
+              </Typography>
+              {editMode ? (
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={handleNameChange}
+                    disabled={loading || !name.trim()}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Save'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setEditMode(false);
+                      setName(profile?.name || '');
+                    }}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography>
+                    {profile?.name || 'No name set'}
+                  </Typography>
+                  <IconButton
+                    onClick={() => setEditMode(true)}
+                    disabled={loading}
+                    size="small"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Container>
   );
 };
 

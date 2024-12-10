@@ -15,10 +15,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"]
     },
+    "types": ["vite/client", "@supabase/supabase-js"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

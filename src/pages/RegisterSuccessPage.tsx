@@ -1,29 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Container, CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
+import React from 'react';
+import { Box, Typography, Container, Button } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CheckCircle as CheckCircleIcon, Email as EmailIcon } from '@mui/icons-material';
 
 const RegisterSuccessPage: React.FC = () => {
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(3);
-
-  useEffect(() => {
-    // Only start countdown if we're actually on this page
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Use replace to prevent back navigation
-          navigate('/login', { replace: true });
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Cleanup timer on unmount
-    return () => clearInterval(timer);
-  }, [navigate]);
+  const location = useLocation();
+  const email = location.state?.email;
 
   return (
     <Box
@@ -65,12 +48,41 @@ const RegisterSuccessPage: React.FC = () => {
             }} 
           />
           <Typography variant="h5" gutterBottom>
-            Account Created Successfully!
+            Registration Successful!
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <EmailIcon color="primary" />
+            <Typography variant="body1" color="text.secondary">
+              Confirmation email sent to:
+            </Typography>
+          </Box>
+          <Typography variant="body1" fontWeight="500" gutterBottom>
+            {email}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Redirecting to login in {countdown} seconds...
+            Please check your email and click the confirmation link to activate your account.
           </Typography>
-          <CircularProgress size={24} />
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => navigate('/login', { replace: true })}
+            sx={{ mb: 2 }}
+          >
+            Go to Login
+          </Button>
+          <Typography variant="body2" color="text.secondary">
+            Didn't receive the email?{' '}
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => {
+                // TODO: Implement resend confirmation email
+                alert('Resend functionality will be implemented soon.');
+              }}
+            >
+              Resend
+            </Button>
+          </Typography>
         </Box>
       </Container>
     </Box>

@@ -1,7 +1,5 @@
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { ref as databaseRef, update, get, } from 'firebase/database';
-import { storage, db, database } from '../config/firebase';
+import { supabase, getFileUrl } from '../config/supabase';
+import { Document } from '../types/supabase';
 
 interface UploadedDocument {
   id: string;
@@ -19,36 +17,43 @@ export const uploadDocument = async (
   try {
     const timestamp = Date.now();
     const fileName = `${userId}/${type}/${timestamp}_${file.name}`;
-    const fileRef = storageRef(storage, fileName);
+    
+    // Upload file to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
-    // Upload file to Storage
-    await uploadBytes(fileRef, file);
-    const downloadURL = await getDownloadURL(fileRef);
+    if (uploadError) throw uploadError;
 
-    // Create document metadata
-    const documentData: UploadedDocument = {
-      id: `${timestamp}`,
+    // Get the public URL
+    const url = getFileUrl('documents', fileName);
+
+    // Create document record in the documents table
+    const documentData = {
+      user_id: userId,
+      document_name: file.name,
+      document_url: url,
+      status: 'Pending'
+    };
+
+    const { data, error: dbError } = await supabase
+      .from('documents')
+      .insert([documentData])
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    return {
+      id: data.id,
       name: file.name,
-      url: downloadURL,
+      url,
       type,
       uploadDate: new Date().toISOString()
     };
-
-    // Update Firestore
-    await updateDoc(doc(db, 'users', userId), {
-      documents: arrayUnion(documentData)
-    });
-
-    // Update Realtime Database
-    const userDocsRef = databaseRef(database, `users/${userId}/documents`);
-    const userDocsSnapshot = await get(userDocsRef);
-    const currentDocs = userDocsSnapshot.exists() ? userDocsSnapshot.val() : [];
-    
-    await update(databaseRef(database, `users/${userId}`), {
-      documents: [...currentDocs, documentData]
-    });
-
-    return documentData;
   } catch (error) {
     console.error('Error uploading document:', error);
     throw error;
@@ -60,24 +65,22 @@ export const deleteDocument = async (
   document: UploadedDocument
 ): Promise<void> => {
   try {
-    // Delete from Storage
-    const fileRef = storageRef(storage, document.url);
-    await deleteObject(fileRef);
+    // Delete from Supabase Storage
+    const filePath = document.url.split('/').slice(-3).join('/');
+    const { error: storageError } = await supabase.storage
+      .from('documents')
+      .remove([filePath]);
 
-    // Remove from Firestore
-    await updateDoc(doc(db, 'users', userId), {
-      documents: arrayRemove(document)
-    });
+    if (storageError) throw storageError;
 
-    // Remove from Realtime Database
-    const userDocsRef = databaseRef(database, `users/${userId}/documents`);
-    const userDocsSnapshot = await get(userDocsRef);
-    const currentDocs = userDocsSnapshot.exists() ? userDocsSnapshot.val() : [];
-    const updatedDocs = currentDocs.filter((doc: UploadedDocument) => doc.id !== document.id);
+    // Delete from documents table
+    const { error: dbError } = await supabase
+      .from('documents')
+      .delete()
+      .eq('document_url', document.url)
+      .eq('user_id', userId);
 
-    await update(databaseRef(database, `users/${userId}`), {
-      documents: updatedDocs
-    });
+    if (dbError) throw dbError;
   } catch (error) {
     console.error('Error deleting document:', error);
     throw error;

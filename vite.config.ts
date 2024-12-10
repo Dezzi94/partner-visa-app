@@ -30,14 +30,13 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@emotion/react', '@emotion/styled'],
-            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
           },
         },
       },
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
+        '@': path.resolve(__dirname, './src'),
         'react-is': path.resolve(__dirname, 'node_modules/react-is'),
       },
     },
@@ -56,10 +55,7 @@ export default defineConfig(({ mode }) => {
         'jspdf',
         'prop-types',
         'react-is',
-        'firebase/app',
-        'firebase/auth',
-        'firebase/firestore',
-        'firebase/storage'
+        '@supabase/supabase-js'
       ],
       exclude: ['@mui/material/utils'],
       esbuildOptions: {
@@ -74,12 +70,8 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       // Pass environment variables to the client
-      'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
-      'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
-      'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
-      'process.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(env.VITE_FIREBASE_STORAGE_BUCKET),
-      'process.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-      'process.env.VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+      'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+      'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
     },
   }
 });

@@ -58,13 +58,15 @@ const RegisterPage = () => {
 
     try {
       await register(email, password);
-      showToast('Account created successfully!', 'success');
-      navigate('/register-success', { replace: true });
+      showToast('Registration successful! Please check your email to confirm your account.', 'success');
+      navigate('/register-success', { 
+        replace: true,
+        state: { email }
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create account';
       setError(message);
       showToast(message, 'error');
-    } finally {
       setLoading(false);
     }
   }, [email, password, confirmPassword, loading, register, navigate, showToast]);
